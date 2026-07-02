@@ -7,6 +7,7 @@ type RegisterRequest struct {
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
+	Role string `json:"role"`
 }
 
 type LoginRequest struct {
@@ -59,4 +60,13 @@ type LoginResponse struct {
 	Token        string       `json:"token"`
 	RefreshToken string       `json:"refreshToken"`
 	User         UserResponse `json:"user"`
+}
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refreshToken"`
+}
+
+type RefreshTokenResponse struct {
+	Token        string `json:"token"`
+	RefreshToken string `json:"refreshToken"`
 }

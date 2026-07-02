@@ -45,14 +45,20 @@ func (s *service) Register(ctx context.Context, req *RegisterRequest) (*UserResp
 	}
 
 	// 4. create user
+	role := req.Role
+	if role == "" {
+		role = "User"
+	}
+
 	newUser := &User{
 		ID:         uuid.New(),
 		FirstName:  req.FirstName,
 		LastName:   req.LastName,
 		Email:      req.Email,
 		Password:   string(hashedPassword),
-		Role:       "user",
+		Role:       role,
 		IsVerified: false,
+		IsLoggedIn: true,
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 	}
@@ -140,6 +146,62 @@ func (s *service) Logout(ctx context.Context, userID uuid.UUID) error {
 		return err
 	}
 	return nil
+}
+
+func (s *service) RefreshToken(ctx context.Context, req *RefreshTokenRequest) (*RefreshTokenResponse, error) {
+	// 1. Validate the refresh token
+	claims, err := utils.ValidateToken(req.RefreshToken)
+	if err != nil {
+		return nil, errors.New("invalid or expired refresh token")
+	}
+
+	// 2. Check if the session exists and is active in DB
+	session, err := s.repo.GetSessionByRefreshToken(ctx, req.RefreshToken)
+	if err != nil || session == nil || !session.IsActive {
+		return nil, errors.New("invalid session")
+	}
+
+	if session.ExpiresAt.Before(time.Now()) {
+		return nil, errors.New("session expired")
+	}
+
+	// 3. Ensure the user exists
+	u, err := s.repo.GetByID(ctx, session.UserID)
+	if err != nil || u == nil {
+		return nil, errors.New("user not found")
+	}
+	
+	// verify claims match user
+	if u.Email != claims.Email {
+		return nil, errors.New("token claims mismatch")
+	}
+
+	// 4. Generate new tokens
+	token, newRefreshToken, err := utils.TokenGenerator(u.Email, u.FirstName, u.LastName, u.ID.String(), u.Role)
+	if err != nil {
+		return nil, err
+	}
+
+	// 5. Update session in DB (Token rotation)
+	session.RefreshToken = newRefreshToken
+	session.ExpiresAt = time.Now().Add(7 * 24 * time.Hour)
+
+	if err := s.repo.UpdateSession(ctx, session); err != nil {
+		return nil, err
+	}
+
+	// 6. Update user record with new tokens
+	u.Token = &token
+	u.RefreshToken = &newRefreshToken
+	u.UpdatedAt = time.Now()
+	if err := s.repo.Update(ctx, u); err != nil {
+		return nil, err
+	}
+
+	return &RefreshTokenResponse{
+		Token:        token,
+		RefreshToken: newRefreshToken,
+	}, nil
 }
 
 func (s *service) ForgotPassword(ctx context.Context, req *ForgotPasswordRequest) error {

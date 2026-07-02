@@ -27,6 +27,7 @@ const Signup = () => {
         lastName: '',
         email: '',
         password: '',
+        role: 'user',
     })
 
     const handleChange = (e) => {
@@ -50,6 +51,7 @@ const Signup = () => {
             if (res.data.success) {
                 dispatch(setUser(res.data.user))
                 localStorage.setItem("accessToken", res.data.user.token)
+                localStorage.setItem("refreshToken", res.data.user.refreshToken)
                 navigate('/')
                 toast.success(res.data.message)
             }
@@ -129,6 +131,34 @@ const Signup = () => {
                                         <Eye onClick={() => setShowPassword(true)} className='w-5 h-5 text-gray-700 absolute right-5 bottom-2' />
 
                                 }
+                            </div>
+                        </div>
+                        
+                        <div className="grid gap-2 mt-1">
+                            <Label>Register as</Label>
+                            <div className="flex items-center gap-6 mt-1">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="role"
+                                        value="user"
+                                        checked={formData.role === 'user'}
+                                        onChange={handleChange}
+                                        className="accent-pink-600 w-4 h-4"
+                                    />
+                                    <span className="text-sm text-gray-700 font-medium">User</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="role"
+                                        value="admin"
+                                        checked={formData.role === 'admin'}
+                                        onChange={handleChange}
+                                        className="accent-pink-600 w-4 h-4"
+                                    />
+                                    <span className="text-sm text-gray-700 font-medium">Admin</span>
+                                </label>
                             </div>
                         </div>
 

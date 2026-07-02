@@ -13,6 +13,7 @@ func RegisterRoutes(r *gin.RouterGroup, h *Handler, authMiddleware gin.HandlerFu
 		// Public
 		userGroup.POST("/register", h.Register)
 		userGroup.POST("/login", h.Login)
+		userGroup.POST("/refresh-token", h.RefreshToken)
 		userGroup.POST("/verify-otp/:email", h.VerifyOTP)
 		userGroup.POST("/forgot-password", h.ForgotPassword)
 		userGroup.POST("/change-password/:email", h.ChangePassword)

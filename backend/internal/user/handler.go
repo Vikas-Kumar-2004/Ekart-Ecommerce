@@ -118,6 +118,42 @@ func (h *Handler) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Logout successful"})
 }
 
+// ─── Refresh Token ────────────────────────────────────────────────────────────
+// @Summary      Refresh Token
+// @Tags         User
+// @Accept       json
+// @Produce      json
+// @Param        request body RefreshTokenRequest true "Refresh token payload"
+// @Success      200  {object}  map[string]any
+// @Failure      400  {object}  map[string]any
+// @Router       /users/refresh-token [post]
+func (h *Handler) RefreshToken(c *gin.Context) {
+	var req RefreshTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "invalid request body",
+		})
+		return
+	}
+
+	resp, err := h.svc.RefreshToken(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success":      true,
+		"message":      "Token refreshed successfully",
+		"token":        resp.Token,
+		"refreshToken": resp.RefreshToken,
+	})
+}
+
 // ─── ForgotPassword ───────────────────────────────────────────────────────────────────
 // @Summary      Forgot password
 // @Tags         User

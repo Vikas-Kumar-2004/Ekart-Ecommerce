@@ -49,6 +49,7 @@ const Login = () => {
                navigate('/')
                dispatch(setUser(res.data.user))
                localStorage.setItem("accessToken", res.data.token)
+               localStorage.setItem("refreshToken", res.data.refreshToken)
                toast.success(res.data.message)
             }
         } catch (error) {
