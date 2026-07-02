@@ -98,6 +98,12 @@ func (s *service) CreateOrder(ctx context.Context, userID uuid.UUID, req *Create
 		return nil, err
 	}
 
+	// 4. cart clear karo - ab CreateOrder me hoga so that Pay Later wale users ka cart clear ho
+	cartData, err := s.cartRepo.GetByUserID(ctx, userID)
+	if err == nil && cartData != nil {
+		s.repo.ClearCart(ctx, cartData.ID)
+	}
+
 	return &CreateOrderResponse{
 		RazorpayOrder: RazorpayOrderResponse{
 			ID:       rpOrder["id"].(string),
@@ -138,12 +144,6 @@ func (s *service) VerifyPayment(ctx context.Context, userID uuid.UUID, req *Veri
 	order, err := s.repo.UpdatePayment(ctx, req.RazorpayOrderID, req.RazorpayPaymentID, req.RazorpaySignature)
 	if err != nil {
 		return nil, err
-	}
-
-	// 5. cart clear karo — JS ka Cart.findOneAndUpdate({ items: [], totalPrice: 0 })
-	cartData, err := s.cartRepo.GetByUserID(ctx, userID)
-	if err == nil && cartData != nil {
-		s.repo.ClearCart(ctx, cartData.ID)
 	}
 
 	return order, nil

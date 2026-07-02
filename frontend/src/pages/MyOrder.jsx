@@ -4,6 +4,8 @@ import { ArrowLeft } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { toast } from 'sonner'
+
 const MyOrder = () => {
   const navigate = useNavigate()
   const [userOrder, setUserOrder] = useState([])
@@ -26,6 +28,105 @@ const MyOrder = () => {
       setLoading(false)
     }
   }
+
+  const handlePayNow = async (order) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const rzpOrderId = order.razorpayOrderId || order.id;
+
+      if (rzpOrderId.startsWith("order_mock_")) {
+        try {
+          const verifyRes = await axios.post(
+            `${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`,
+            {
+              razorpay_order_id: rzpOrderId,
+              razorpay_payment_id: "pay_mock_12345",
+              razorpay_signature: "mock_signature_bypass",
+              paymentFailed: false,
+            },
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+
+          if (verifyRes.data.success) {
+            toast.success("✅ Payment Successful (Mock)!");
+            getUserOrders();
+          } else {
+            toast.error("❌ Mock Payment Verification Failed");
+          }
+        } catch (error) {
+          toast.error("Error verifying mock payment");
+        }
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: Math.round(order.amount * 100),
+        currency: order.currency || "INR",
+        name: "Ekart",
+        description: "Order Payment",
+        order_id: rzpOrderId,
+
+        handler: async function (response) {
+          try {
+            const verifyRes = await axios.post(
+              `${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`,
+              response,
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+
+            if (verifyRes.data.success) {
+              toast.success("✅ Payment Successful!");
+              getUserOrders();
+            } else {
+              toast.error("❌ Payment Verification Failed");
+            }
+          } catch (error) {
+            toast.error("Error verifying payment");
+          }
+        },
+
+        modal: {
+          ondismiss: async function () {
+            await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`, {
+              razorpay_order_id: rzpOrderId,
+              paymentFailed: true,
+            }, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+
+            toast.error("Payment cancelled or failed");
+            getUserOrders();
+          },
+        },
+
+        prefill: {
+          name: order.user?.name || "",
+          email: order.user?.email || "",
+        },
+        theme: { color: "#F472B6" },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      rzp.on("payment.failed", async function (response) {
+        await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`, {
+          razorpay_order_id: rzpOrderId,
+          paymentFailed: true,
+        }, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        toast.error("Payment Failed. Please try again.");
+        getUserOrders();
+      });
+
+      rzp.open();
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while processing payment");
+    }
+  };
 
   useEffect(() => {
     getUserOrders()
@@ -88,10 +189,15 @@ const MyOrder = () => {
                       Email: {order.user?.email || "N/A"}
                     </p>
                   </div>
-                  <div className="self-start sm:self-auto">
+                  <div className="self-start sm:self-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     <span className={`${order.status === 'Paid' ? 'bg-green-500' : order.status === 'Failed' ? 'bg-red-500' : 'bg-orange-300'} text-white px-3 py-1 rounded-lg text-sm font-medium`}>
                       {order.status}
                     </span>
+                    {order.status === 'Pending' && (
+                      <Button onClick={() => handlePayNow(order)} size="sm" className="bg-pink-600 hover:bg-pink-700 shadow-sm">
+                        Pay Now
+                      </Button>
+                    )}
                   </div>
                 </div>
 

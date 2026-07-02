@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { addAddress, deleteAddress, setCart, setSelectedAddress } from "@/redux/productSlice";
 import axios from "axios";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 
 const AddressForm = () => {
   const [formData, setFormData] = useState({
@@ -126,129 +127,147 @@ const AddressForm = () => {
   //     toast.error("Something went wrong while processing payment");
   //   }
   // }
-  const handlePayment = async () => {
-  try {
-    const { data } = await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/create-order`, {
-      products: cart?.items?.map(item => ({
-        productId: item.productId.id,
-        quantity: item.quantity,
-      })),
-      tax,
-      shipping,
-      amount: total,
-      currency: "INR",
-    }, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+  const [createdOrder, setCreatedOrder] = useState(null);
 
-    if (!data.success) return toast.error("Something went wrong");
-
-    // MOCK MODE: Bypass Razorpay popup if using mock order ID
-    if (data.order.id.startsWith("order_mock_")) {
-      toast.success("✅ Mock Order Created!");
-      try {
-        const verifyRes = await axios.post(
-          `${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`,
-          {
-            razorpay_order_id: data.order.id,
-            razorpay_payment_id: "pay_mock_12345",
-            razorpay_signature: "mock_signature_bypass",
-            paymentFailed: false,
-          },
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
-
-        if (verifyRes.data.success) {
-          toast.success("✅ Payment Successful (Mock)!");
-          dispatch(setCart({ items: [], totalPrice: 0 }));
-          navigate("/order-success");
-        } else {
-          toast.error("❌ Mock Payment Verification Failed");
-        }
-      } catch (error) {
-        toast.error("Error verifying mock payment");
-      }
-      return;
-    }
-
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      amount: data.order.amount,
-      currency: data.order.currency,
-      name: "Ekart",
-      description: "Order Payment",
-      order_id: data.order.id,
-
-      handler: async function (response) {
-        // ✅ SUCCESS payment flow
-        try {
-          const verifyRes = await axios.post(
-            `${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`,
-            response,
-            { headers: { Authorization: `Bearer ${accessToken}` } }
-          );
-
-          if (verifyRes.data.success) {
-            toast.success("✅ Payment Successful!");
-            dispatch(setCart({ items: [], totalPrice: 0 }));
-            navigate("/order-success");
-          } else {
-            toast.error("❌ Payment Verification Failed");
-          }
-        } catch (error) {
-          toast.error("Error verifying payment");
-        }
-      },
-
-      modal: {
-        ondismiss: async function () {
-          // ❌ Handle user closing the popup
-          await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`, {
-            razorpay_order_id: data.order.id,
-            paymentFailed: true,
-          }, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          });
-
-          toast.error("Payment cancelled or failed");
-        },
-      },
-
-      prefill: {
-        name: formData.fullName,
-        email: formData.email,
-        contact: formData.phone,
-      },
-      theme: { color: "#F472B6" },
-    };
-
-    const rzp = new window.Razorpay(options);
-
-    // ❌ Listen for payment failures
-    rzp.on("payment.failed", async function (response) {
-      await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`, {
-        razorpay_order_id: data.order.id,
-        paymentFailed: true,
+  const handleCreateOrder = async () => {
+    try {
+      const { data } = await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/create-order`, {
+        products: cart?.items?.map(item => ({
+          productId: item.productId.id,
+          quantity: item.quantity,
+        })),
+        tax,
+        shipping,
+        amount: total,
+        currency: "INR",
       }, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
-      toast.error("Payment Failed. Please try again.");
-    });
+      if (!data.success) return toast.error("Something went wrong");
 
-    rzp.open();
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong while processing payment");
-  }
-};
+      setCreatedOrder(data.order);
+      toast.success("Order has been created successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to create order");
+    }
+  };
+
+  const handleProceedToPayment = async () => {
+    if (!createdOrder) return;
+
+    try {
+      // MOCK MODE: Bypass Razorpay popup if using mock order ID
+      if (createdOrder.id.startsWith("order_mock_")) {
+        try {
+          const verifyRes = await axios.post(
+            `${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`,
+            {
+              razorpay_order_id: createdOrder.id,
+              razorpay_payment_id: "pay_mock_12345",
+              razorpay_signature: "mock_signature_bypass",
+              paymentFailed: false,
+            },
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+
+          if (verifyRes.data.success) {
+            toast.success("✅ Payment Successful (Mock)!");
+            dispatch(setCart({ items: [], totalPrice: 0 }));
+            navigate("/order-success");
+          } else {
+            toast.error("❌ Mock Payment Verification Failed");
+          }
+        } catch (error) {
+          toast.error("Error verifying mock payment");
+        }
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: createdOrder.amount,
+        currency: createdOrder.currency,
+        name: "Ekart",
+        description: "Order Payment",
+        order_id: createdOrder.id,
+
+        handler: async function (response) {
+          // ✅ SUCCESS payment flow
+          try {
+            const verifyRes = await axios.post(
+              `${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`,
+              response,
+              { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+
+            if (verifyRes.data.success) {
+              toast.success("✅ Payment Successful!");
+              dispatch(setCart({ items: [], totalPrice: 0 }));
+              navigate("/order-success");
+            } else {
+              toast.error("❌ Payment Verification Failed");
+            }
+          } catch (error) {
+            toast.error("Error verifying payment");
+          }
+        },
+
+        modal: {
+          ondismiss: async function () {
+            // ❌ Handle user closing the popup
+            await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`, {
+              razorpay_order_id: createdOrder.id,
+              paymentFailed: true,
+            }, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+
+            toast.error("Payment cancelled or failed");
+          },
+        },
+
+        prefill: {
+          name: formData.fullName,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        theme: { color: "#F472B6" },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      // ❌ Listen for payment failures
+      rzp.on("payment.failed", async function (response) {
+        await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`, {
+          razorpay_order_id: createdOrder.id,
+          paymentFailed: true,
+        }, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        toast.error("Payment Failed. Please try again.");
+      });
+
+      rzp.open();
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while processing payment");
+    }
+  };
 
 
   return (
-    <div className="max-w-7xl mx-auto grid place-items-center p-10">
+    <div className="max-w-7xl mx-auto flex flex-col p-10 w-full relative">
+      <div className="w-full self-start mb-6">
+        <Button onClick={() => navigate(-1)} variant="ghost" className="flex items-center gap-2 -ml-4">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </Button>
+      </div>
       {/* <Stepper currentStep={1} /> Step 2: Address */}
 
-      <div className="grid grid-cols-2 items-start gap-20 mt-10 max-w-7xl mx-auto">
+      <div className="grid grid-cols-2 items-start gap-20 mt-4 max-w-7xl mx-auto w-full">
         {/* LEFT SIDE */}
         <div className="space-y-4 p-6 bg-white">
           {showForm ? (
@@ -384,21 +403,50 @@ const AddressForm = () => {
                 </div>
               ))}
 
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setShowForm(true)}
-              >
-                + Add New Address
-              </Button>
-
-              <Button
-                disabled={selectedAddress === null}
-                onClick={handlePayment}
-                className="w-full bg-pink-600"
-              >
-                Proceed To Checkout
-              </Button>
+              {!createdOrder ? (
+                <>
+                  <Button
+                    variant="outline"
+                    className="w-full mb-4"
+                    onClick={() => setShowForm(true)}
+                  >
+                    + Add New Address
+                  </Button>
+                  <Button
+                    disabled={selectedAddress === null}
+                    onClick={handleCreateOrder}
+                    className="w-full bg-pink-600 hover:bg-pink-700"
+                  >
+                    Create Order
+                  </Button>
+                </>
+              ) : (
+                <div className="w-full space-y-4">
+                  <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-lg flex flex-col items-center justify-center space-y-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="font-semibold text-center">Order Created Successfully!</p>
+                    <p className="text-sm text-center">Your order status is currently <span className="font-bold">Pending</span>.</p>
+                  </div>
+                  <Button
+                    onClick={handleProceedToPayment}
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-6 text-lg"
+                  >
+                    Pay Now
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      dispatch(setCart({ items: [], totalPrice: 0 }));
+                      navigate('/orders');
+                    }}
+                    className="w-full py-6 text-lg text-gray-600 border-gray-300 hover:bg-gray-50"
+                  >
+                    Pay Later
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>

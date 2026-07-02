@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { setCart } from '@/redux/productSlice'
-import { ShoppingCart, Trash2 } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, Trash2 } from 'lucide-react'
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
@@ -79,7 +79,12 @@ const handleRemove = async (productId) => {
     <div className='pt-20 bg-gray-50 min-h-screen'>
       {
         cart?.items?.length > 0 ? <div className='max-w-7xl mx-auto '>
-          <h1 className='text-2xl font-bold text-gray-800 mb-7'>Shopping Cart</h1>
+          <div className="flex items-center gap-4 mb-7">
+            <Button variant="ghost" onClick={() => navigate(-1)} className="flex items-center gap-2 -ml-4">
+              <ArrowLeft className="w-4 h-4" /> Back
+            </Button>
+            <h1 className='text-2xl font-bold text-gray-800'>Shopping Cart</h1>
+          </div>
           <div className='max-w-7xl mx-auto flex gap-7'>
             <div className='flex flex-col gap-5 flex-1'>
               {cart?.items?.map((product, index) => {
