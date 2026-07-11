@@ -5,6 +5,7 @@ import (
 	"go-ekart/internal/dashboard"
 	"go-ekart/internal/order"
 	"go-ekart/internal/product"
+	"go-ekart/internal/review"
 	"go-ekart/internal/user"
 	"go-ekart/pkg/cloudinary"
 	"log"
@@ -20,6 +21,7 @@ type Handlers struct {
 	Cart      *cart.Handler
 	Order     *order.Handler
 	Dashboard *dashboard.Handler
+	Review    *review.Handler
 }
 
 func BuildHandlers(db *pgxpool.Pool) *Handlers {
@@ -58,11 +60,17 @@ func BuildHandlers(db *pgxpool.Pool) *Handlers {
 	dashSvc := dashboard.NewService(dashRepo)
 	dashH := dashboard.NewHandler(dashSvc)
 
+	// 7. Review Module
+	reviewRepo := review.NewRepository(db)
+	reviewSvc := review.NewService(reviewRepo)
+	reviewH := review.NewHandler(reviewSvc)
+
 	return &Handlers{
 		User:      userH,
 		Product:   productH,
 		Cart:      cartH,
 		Order:     orderH,
 		Dashboard: dashH,
+		Review:    reviewH,
 	}
 }
