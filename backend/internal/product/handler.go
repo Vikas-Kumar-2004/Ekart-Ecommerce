@@ -3,6 +3,7 @@ package product
 import (
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -72,7 +73,32 @@ func (h *Handler) AddProduct(c *gin.Context) {
 // @Failure      500  {object}  map[string]any
 // @Router       /products [get]
 func (h *Handler) GetAllProducts(c *gin.Context) {
-	products, err := h.svc.GetAllProducts(c.Request.Context())
+	pageStr := c.DefaultQuery("page", "1")
+	limitStr := c.DefaultQuery("limit", "12") // 12 items default
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		limit = 12
+	}
+
+	minPrice, _ := strconv.ParseFloat(c.Query("minPrice"), 64)
+	maxPrice, _ := strconv.ParseFloat(c.Query("maxPrice"), 64)
+
+	filter := ProductFilter{
+		Search:    c.Query("search"),
+		Category:  c.Query("category"),
+		Brand:     c.Query("brand"),
+		MinPrice:  minPrice,
+		MaxPrice:  maxPrice,
+		SortOrder: c.Query("sortOrder"),
+	}
+
+	paginatedRes, err := h.svc.GetAllProducts(c.Request.Context(), filter, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -81,20 +107,59 @@ func (h *Handler) GetAllProducts(c *gin.Context) {
 		return
 	}
 
-	// JS ka if (!products) — empty slice pe 404
-	if len(products) == 0 {
+	if len(paginatedRes.Products) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"success":  false,
 			"message":  "No Product available",
 			"products": []any{},
+			"pagination": gin.H{
+				"totalItems":  paginatedRes.TotalItems,
+				"totalPages":  paginatedRes.TotalPages,
+				"currentPage": paginatedRes.CurrentPage,
+				"limit":       paginatedRes.Limit,
+			},
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
-		"products": products,
+		"products": paginatedRes.Products,
+		"pagination": gin.H{
+			"totalItems":  paginatedRes.TotalItems,
+			"totalPages":  paginatedRes.TotalPages,
+			"currentPage": paginatedRes.CurrentPage,
+			"limit":       paginatedRes.Limit,
+		},
 	})
+}
+
+// @Summary      Get all categories
+// @Tags         Product
+// @Produce      json
+// @Success      200  {array}  string
+// @Router       /product/categories [get]
+func (h *Handler) GetCategories(c *gin.Context) {
+	categories, err := h.svc.GetCategories(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "categories": categories})
+}
+
+// @Summary      Get all brands
+// @Tags         Product
+// @Produce      json
+// @Success      200  {array}  string
+// @Router       /product/brands [get]
+func (h *Handler) GetBrands(c *gin.Context) {
+	brands, err := h.svc.GetBrands(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "brands": brands})
 }
 
 // @Summary      Delete product

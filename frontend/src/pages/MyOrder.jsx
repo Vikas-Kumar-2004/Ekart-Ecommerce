@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button'
 import axios from 'axios'
-import { ArrowLeft, MapPin } from 'lucide-react'
+import { ArrowLeft, MapPin, FileText } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { generateInvoice } from '../utils/invoiceGenerator'
 import OrderTracker from '../components/OrderTracker'
 
 import { toast } from 'sonner'
@@ -154,10 +155,19 @@ const MyOrder = () => {
                       </Button>
                     )}
                     {order.status !== 'Pending' && order.status !== 'Failed' && (
-                      <Button onClick={() => toggleTrackOrder(order.id)} size="sm" variant="outline" className="border-pink-600 text-pink-600 hover:bg-pink-50 flex gap-2">
-                        <MapPin className="w-4 h-4" />
-                        {trackingOrderIds[order.id] ? 'Hide Tracking' : 'Track Order'}
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button onClick={() => toggleTrackOrder(order.id)} size="sm" variant="outline" className="border-pink-600 text-pink-600 hover:bg-pink-50 flex gap-2">
+                          <MapPin className="w-4 h-4" />
+                          {trackingOrderIds[order.id] ? 'Hide Tracking' : 'Track Order'}
+                        </Button>
+                        
+                        {order.status === 'Delivered' && (
+                          <Button onClick={() => generateInvoice(order)} size="sm" className="bg-pink-100 text-pink-700 hover:bg-pink-200 shadow-sm flex gap-2 border border-pink-200">
+                            <FileText className="w-4 h-4" />
+                            Invoice
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>

@@ -21,8 +21,10 @@ axios.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // If error is 401 and it's not a retry already
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // If error is 401 and it's not a retry already, AND it's not the login or refresh route
+    const isAuthRoute = originalRequest.url.includes('/login') || originalRequest.url.includes('/refresh-token') || originalRequest.url.includes('/signup');
+    
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRoute) {
       if (isRefreshing) {
         return new Promise(function(resolve, reject) {
           failedQueue.push({ resolve, reject });

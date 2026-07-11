@@ -33,3 +33,20 @@ type ProductResponse struct {
 	Brand        string                 `json:"brand"`
 	Images       []ProductImageResponse `json:"productImg"`
 }
+
+type PaginatedProductResponse struct {
+	Products    []*ProductResponse `json:"products"`
+	TotalItems  int                `json:"totalItems"`
+	TotalPages  int                `json:"totalPages"`
+	CurrentPage int                `json:"currentPage"`
+	Limit       int                `json:"limit"`
+}
+
+type ProductFilter struct {
+	Search    string
+	Category  string
+	Brand     string
+	MinPrice  float64
+	MaxPrice  float64
+	SortOrder string
+}

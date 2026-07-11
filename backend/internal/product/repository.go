@@ -3,6 +3,8 @@ package product
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -42,6 +44,42 @@ func (r *repository) SaveImages(ctx context.Context, images []ProductImage) erro
 		}
 	}
 	return nil
+}
+
+func (r *repository) GetUniqueCategories(ctx context.Context) ([]string, error) {
+	rows, err := r.db.Query(ctx, "SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category != '' ORDER BY category ASC")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []string
+	for rows.Next() {
+		var cat string
+		if err := rows.Scan(&cat); err != nil {
+			return nil, err
+		}
+		categories = append(categories, cat)
+	}
+	return categories, nil
+}
+
+func (r *repository) GetUniqueBrands(ctx context.Context) ([]string, error) {
+	rows, err := r.db.Query(ctx, "SELECT DISTINCT brand FROM products WHERE brand IS NOT NULL AND brand != '' ORDER BY brand ASC")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var brands []string
+	for rows.Next() {
+		var brand string
+		if err := rows.Scan(&brand); err != nil {
+			return nil, err
+		}
+		brands = append(brands, brand)
+	}
+	return brands, nil
 }
 
 func (r *repository) GetByID(ctx context.Context, id uuid.UUID) (*Product, error) {
@@ -95,17 +133,77 @@ func (r *repository) GetByID(ctx context.Context, id uuid.UUID) (*Product, error
 	return product, nil
 }
 
-func (r *repository) GetAll(ctx context.Context) ([]*Product, error) {
-	query := `
-        SELECT p.id, p.user_id, p.product_name, p.product_desc, p.product_price, p.category, p.brand, p.created_at, p.updated_at,
-               pi.id, pi.url, pi.public_id
-        FROM products p
-        LEFT JOIN product_images pi ON pi.product_id = p.id
-        ORDER BY p.created_at DESC
-    `
-	rows, err := r.db.Query(ctx, query)
+func (r *repository) GetAll(ctx context.Context, filter ProductFilter, page, limit int) ([]*Product, int, error) {
+	// Build WHERE clause dynamically
+	whereClause := "WHERE 1=1"
+	var args []interface{}
+	argID := 1
+
+	if filter.Search != "" {
+		whereClause += fmt.Sprintf(" AND p.product_name ILIKE $%d", argID)
+		args = append(args, "%"+filter.Search+"%")
+		argID++
+	}
+	if filter.Category != "" && filter.Category != "All" {
+		whereClause += fmt.Sprintf(" AND p.category = $%d", argID)
+		args = append(args, filter.Category)
+		argID++
+	}
+	if filter.Brand != "" && filter.Brand != "All" {
+		whereClause += fmt.Sprintf(" AND p.brand = $%d", argID)
+		args = append(args, filter.Brand)
+		argID++
+	}
+	if filter.MinPrice > 0 {
+		whereClause += fmt.Sprintf(" AND p.product_price >= $%d", argID)
+		args = append(args, filter.MinPrice)
+		argID++
+	}
+	if filter.MaxPrice > 0 && filter.MaxPrice > filter.MinPrice {
+		whereClause += fmt.Sprintf(" AND p.product_price <= $%d", argID)
+		args = append(args, filter.MaxPrice)
+		argID++
+	}
+
+	// Determine Sort
+	sortClause := "ORDER BY p.created_at DESC"
+	if filter.SortOrder == "lowToHigh" {
+		sortClause = "ORDER BY p.product_price ASC"
+	} else if filter.SortOrder == "highToLow" {
+		sortClause = "ORDER BY p.product_price DESC"
+	}
+
+	// 1. Get total count
+	var totalCount int
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM products p %s", whereClause)
+	err := r.db.QueryRow(ctx, countQuery, args...).Scan(&totalCount)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * limit
+
+	// 2. Fetch paginated products with images using CTE
+	query := fmt.Sprintf(`
+        WITH paginated_products AS (
+            SELECT p.id, p.user_id, p.product_name, p.product_desc, p.product_price, p.category, p.brand, p.created_at, p.updated_at
+            FROM products p
+            %s
+            %s
+            LIMIT $%d OFFSET $%d
+        )
+        SELECT pp.id, pp.user_id, pp.product_name, pp.product_desc, pp.product_price, pp.category, pp.brand, pp.created_at, pp.updated_at,
+               pi.id, pi.url, pi.public_id
+        FROM paginated_products pp
+        LEFT JOIN product_images pi ON pi.product_id = pp.id
+        %s
+    `, whereClause, sortClause, argID, argID+1, strings.ReplaceAll(sortClause, "p.", "pp."))
+
+	args = append(args, limit, offset)
+
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -123,7 +221,7 @@ func (r *repository) GetAll(ctx context.Context) ([]*Product, error) {
 			&imgID, &imgURL, &imgPublicID,
 		)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		if existingP, ok := productMap[p.ID]; ok {
@@ -149,7 +247,7 @@ func (r *repository) GetAll(ctx context.Context) ([]*Product, error) {
 		}
 	}
 
-	return orderedProducts, nil
+	return orderedProducts, totalCount, nil
 }
 
 func (r *repository) GetImages(ctx context.Context, productID uuid.UUID) ([]ProductImage, error) {
