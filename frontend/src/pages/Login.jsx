@@ -53,6 +53,11 @@ const Login = () => {
                toast.success(res.data.message)
             }
         } catch (error) {
+            if (error.response && error.response.data && error.response.data.message) {
+                toast.error(error.response.data.message)
+            } else {
+                toast.error("An error occurred during login")
+            }
             console.log(error);          
         } finally {
             setLoading(false)
@@ -69,58 +74,56 @@ const Login = () => {
                     </CardDescription>
 
                 </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col gap-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                name='email'
-                                value={formData.email}
-                                onChange={handleChange}
-                                placeholder="m@example.com"
-                                required
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <div className="flex items-center">
-                                <Label htmlFor="password">Password</Label>
-                            </div>
-                            <div className='relative'>
+                <form onSubmit={submitHandler}>
+                    <CardContent>
+                        <div className="flex flex-col gap-6">
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">Email</Label>
                                 <Input
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
+                                    id="email"
+                                    type="email"
+                                    name='email'
+                                    value={formData.email}
                                     onChange={handleChange}
-                                    placeholder='Create a password'
-                                    type={showPassword ? 'text' : 'password'}
+                                    placeholder="m@example.com"
                                     required
                                 />
-                                {
-                                    showPassword ? <EyeOff onClick={() => { setShowPassword(false), console.log('clicked') }
-                                    } className='w-5 h-5 text-gray-700 absolute right-5 bottom-2' /> :
-                                        <Eye onClick={() => setShowPassword(true)} className='w-5 h-5 text-gray-700 absolute right-5 bottom-2' />
-
-                                }
+                            </div>
+                            <div className="grid gap-2">
+                                <div className="flex items-center">
+                                    <Label htmlFor="password">Password</Label>
+                                </div>
+                                <div className='relative'>
+                                    <Input
+                                        id="password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        placeholder='Create a password'
+                                        type={showPassword ? 'text' : 'password'}
+                                        required
+                                    />
+                                    {
+                                        showPassword ? <EyeOff onClick={() => { setShowPassword(false) }
+                                        } className='w-5 h-5 text-gray-700 absolute right-5 bottom-2 cursor-pointer' /> :
+                                            <Eye onClick={() => setShowPassword(true)} className='w-5 h-5 text-gray-700 absolute right-5 bottom-2 cursor-pointer' />
+                                    }
+                                </div>
                             </div>
                         </div>
+                    </CardContent>
+                    <div className="flex justify-end px-6 pb-2 -mt-4">
+                        <Link to="/forgot-password" className="text-sm text-pink-600 hover:text-pink-800 font-medium">Forgot Password?</Link>
                     </div>
-                </CardContent>
-                <div className="flex justify-end px-6 pb-2 -mt-4">
-                    <Link to="/forgot-password" className="text-sm text-pink-600 hover:text-pink-800 font-medium">Forgot Password?</Link>
-                </div>
-                <CardFooter className="flex-col gap-2">
-                    <Button onClick={submitHandler} type="submit" className="w-full bg-pink-600 hover:bg-pink-500">
-                         {
-                            loading ? <><Loader2 className='h-4 w-4 animate-spin mr-2' />Please wait</> : 'Login'
-                        }
-                    </Button>
-                    {/* <Button variant="outline" className="w-full">
-                        Login with Google
-                    </Button> */}
-                    <p className='text-gray-700 text-sm'>Don't have an account? <Link to={'/signup'} className='hover:underline cursor-pointer text-pink-800'>signup</Link></p>
-                </CardFooter>
+                    <CardFooter className="flex-col gap-2">
+                        <Button disabled={loading} type="submit" className="w-full bg-pink-600 hover:bg-pink-500">
+                            {
+                                loading ? <><Loader2 className='h-4 w-4 animate-spin mr-2' />Please wait</> : 'Login'
+                            }
+                        </Button>
+                        <p className='text-gray-700 text-sm'>Don't have an account? <Link to={'/signup'} className='hover:underline cursor-pointer text-pink-800'>signup</Link></p>
+                    </CardFooter>
+                </form>
             </Card>
         </div>
     )
