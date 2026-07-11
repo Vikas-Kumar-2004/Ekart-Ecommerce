@@ -18,6 +18,8 @@ type Repository interface {
 	DeleteSession(ctx context.Context, userID uuid.UUID) error
 	UpdateLogoutStatus(ctx context.Context, userID uuid.UUID) error
 	GetAll(ctx context.Context) ([]*User, error)
+	GetSessionByRefreshToken(ctx context.Context, refreshToken string) (*Session, error)
+	UpdateSession(ctx context.Context, session *Session) error
 }
 
 // ─── Service Interface ────────────────────────────────────────────────────────
@@ -34,4 +36,5 @@ type Service interface {
 	ForgotPassword(ctx context.Context, req *ForgotPasswordRequest) error
 	GetAllUsers(ctx context.Context) ([]*UserResponse, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (*UserResponse, error)
+	RefreshToken(ctx context.Context, req *RefreshTokenRequest) (*RefreshTokenResponse, error)
 }

@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { addAddress, deleteAddress, setCart, setSelectedAddress } from "@/redux/productSlice";
 import axios from "axios";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 
 const AddressForm = () => {
   const [formData, setFormData] = useState({
@@ -27,6 +28,11 @@ const AddressForm = () => {
   const [showForm, setShowForm] = useState(addresses.length > 0 ? false : true);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Dummy payment form state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("UPI");
+  const [upiId, setUpiId] = useState("");
 
   const subtotal = cart?.totalPrice || 0;
   const shipping = subtotal > 50 ? 0 : 10;
@@ -55,18 +61,10 @@ const AddressForm = () => {
   console.log('cart', cart);
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    document.body.appendChild(script);
+    // Razorpay script removed as we are using Dummy Payment modal
   }, []);
 
   const accessToken = localStorage.getItem("accessToken")
-  // const handlePayment = async () => {
-  //   try {
-  //     // Step 1: Create order on backend
-  //     console.log({ tax, shipping, total, products: cart?.items });
-  //     const { data } = await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/create-order`, {
   //       products: cart?.items?.map(item => ({
   //         productId: item.productId.id,   // rename _id to productId
   //         quantity: item.quantity,
@@ -126,129 +124,88 @@ const AddressForm = () => {
   //     toast.error("Something went wrong while processing payment");
   //   }
   // }
-  const handlePayment = async () => {
-  try {
-    const { data } = await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/create-order`, {
-      products: cart?.items?.map(item => ({
-        productId: item.productId.id,
-        quantity: item.quantity,
-      })),
-      tax,
-      shipping,
-      amount: total,
-      currency: "INR",
-    }, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+  const [createdOrder, setCreatedOrder] = useState(null);
 
-    if (!data.success) return toast.error("Something went wrong");
-
-    // MOCK MODE: Bypass Razorpay popup if using mock order ID
-    if (data.order.id.startsWith("order_mock_")) {
-      toast.success("✅ Mock Order Created!");
-      try {
-        const verifyRes = await axios.post(
-          `${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`,
-          {
-            razorpay_order_id: data.order.id,
-            razorpay_payment_id: "pay_mock_12345",
-            razorpay_signature: "mock_signature_bypass",
-            paymentFailed: false,
-          },
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
-
-        if (verifyRes.data.success) {
-          toast.success("✅ Payment Successful (Mock)!");
-          dispatch(setCart({ items: [], totalPrice: 0 }));
-          navigate("/order-success");
-        } else {
-          toast.error("❌ Mock Payment Verification Failed");
-        }
-      } catch (error) {
-        toast.error("Error verifying mock payment");
-      }
-      return;
-    }
-
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      amount: data.order.amount,
-      currency: data.order.currency,
-      name: "Ekart",
-      description: "Order Payment",
-      order_id: data.order.id,
-
-      handler: async function (response) {
-        // ✅ SUCCESS payment flow
-        try {
-          const verifyRes = await axios.post(
-            `${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`,
-            response,
-            { headers: { Authorization: `Bearer ${accessToken}` } }
-          );
-
-          if (verifyRes.data.success) {
-            toast.success("✅ Payment Successful!");
-            dispatch(setCart({ items: [], totalPrice: 0 }));
-            navigate("/order-success");
-          } else {
-            toast.error("❌ Payment Verification Failed");
-          }
-        } catch (error) {
-          toast.error("Error verifying payment");
-        }
-      },
-
-      modal: {
-        ondismiss: async function () {
-          // ❌ Handle user closing the popup
-          await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`, {
-            razorpay_order_id: data.order.id,
-            paymentFailed: true,
-          }, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          });
-
-          toast.error("Payment cancelled or failed");
-        },
-      },
-
-      prefill: {
-        name: formData.fullName,
-        email: formData.email,
-        contact: formData.phone,
-      },
-      theme: { color: "#F472B6" },
-    };
-
-    const rzp = new window.Razorpay(options);
-
-    // ❌ Listen for payment failures
-    rzp.on("payment.failed", async function (response) {
-      await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`, {
-        razorpay_order_id: data.order.id,
-        paymentFailed: true,
+  const handleCreateOrder = async () => {
+    try {
+      const { data } = await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/create-order`, {
+        products: cart?.items?.map(item => ({
+          productId: item.productId.id,
+          quantity: item.quantity,
+          price: item.productId.productPrice,
+        })),
+        tax,
+        shipping,
+        amount: total,
+        currency: "INR",
       }, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
-      toast.error("Payment Failed. Please try again.");
-    });
+      if (!data.success) return toast.error("Something went wrong");
 
-    rzp.open();
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong while processing payment");
-  }
-};
+      setCreatedOrder(data.order);
+      toast.success("Order has been created successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to create order");
+    }
+  };
+
+  const handlePayNowClick = () => {
+    if (!createdOrder) return;
+    setPaymentMethod("UPI");
+    setUpiId("");
+    setShowPaymentModal(true);
+  };
+
+  const handleDummyPaymentSubmit = async (e) => {
+    e.preventDefault();
+    if (paymentMethod === "UPI" && !upiId.trim()) {
+      toast.error("Please enter a valid UPI ID");
+      return;
+    }
+    
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const rzpOrderId = createdOrder.id;
+
+      const verifyRes = await axios.post(
+        `${import.meta.env.VITE_URL}/api/v1/orders/verify-payment`,
+        {
+          razorpay_order_id: rzpOrderId,
+          razorpay_payment_id: "pay_dummy_" + Math.floor(Math.random() * 1000000),
+          razorpay_signature: "dummy_signature_bypass",
+          paymentFailed: false,
+        },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      if (verifyRes.data.success) {
+        toast.success("✅ Payment Successful!");
+        dispatch(setCart({ items: [], totalPrice: 0 }));
+        setShowPaymentModal(false);
+        navigate("/order-success");
+      } else {
+        toast.error("❌ Payment Verification Failed");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error verifying payment");
+    }
+  };
 
 
   return (
-    <div className="max-w-7xl mx-auto grid place-items-center p-10">
+    <div className="max-w-7xl mx-auto flex flex-col p-10 w-full relative">
+      <div className="w-full self-start mb-6">
+        <Button onClick={() => navigate(-1)} variant="ghost" className="flex items-center gap-2 -ml-4">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </Button>
+      </div>
       {/* <Stepper currentStep={1} /> Step 2: Address */}
 
-      <div className="grid grid-cols-2 items-start gap-20 mt-10 max-w-7xl mx-auto">
+      <div className="grid grid-cols-2 items-start gap-20 mt-4 max-w-7xl mx-auto w-full">
         {/* LEFT SIDE */}
         <div className="space-y-4 p-6 bg-white">
           {showForm ? (
@@ -384,21 +341,50 @@ const AddressForm = () => {
                 </div>
               ))}
 
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setShowForm(true)}
-              >
-                + Add New Address
-              </Button>
-
-              <Button
-                disabled={selectedAddress === null}
-                onClick={handlePayment}
-                className="w-full bg-pink-600"
-              >
-                Proceed To Checkout
-              </Button>
+              {!createdOrder ? (
+                <>
+                  <Button
+                    variant="outline"
+                    className="w-full mb-4"
+                    onClick={() => setShowForm(true)}
+                  >
+                    + Add New Address
+                  </Button>
+                  <Button
+                    disabled={selectedAddress === null}
+                    onClick={handleCreateOrder}
+                    className="w-full bg-pink-600 hover:bg-pink-700"
+                  >
+                    Create Order
+                  </Button>
+                </>
+              ) : (
+                <div className="w-full space-y-4">
+                  <div className="bg-pink-50 border border-pink-200 text-pink-700 p-4 rounded-lg flex flex-col items-center justify-center space-y-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="font-semibold text-center">Order Created Successfully!</p>
+                    <p className="text-sm text-center">Your order status is currently <span className="font-bold">Pending</span>.</p>
+                  </div>
+                  <Button
+                    onClick={handlePayNowClick}
+                    className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-6 text-lg"
+                  >
+                    Pay Now
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      dispatch(setCart({ items: [], totalPrice: 0 }));
+                      navigate('/orders');
+                    }}
+                    className="w-full py-6 text-lg text-gray-600 border-gray-300 hover:bg-gray-50"
+                  >
+                    Pay Later
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -436,6 +422,66 @@ const AddressForm = () => {
           </Card>
         </div>
       </div>
+
+      {/* Dummy Payment Modal */}
+      {showPaymentModal && createdOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 relative">
+            <button 
+              onClick={() => setShowPaymentModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Complete Payment</h2>
+            
+            <form onSubmit={handleDummyPaymentSubmit} className="space-y-5">
+              <div className="bg-pink-50/50 border border-pink-100 p-4 rounded-lg text-sm space-y-2 text-gray-700">
+                <p><span className="font-semibold text-gray-900">Name:</span> {formData.fullName || "User"}</p>
+                <p className="line-clamp-2" title={cart?.items?.map(p => p.productId.productName).join(', ')}>
+                  <span className="font-semibold text-gray-900">Products:</span> {cart?.items?.map(p => p.productId.productName).join(', ')}
+                </p>
+                <div className="pt-2 mt-2 border-t border-pink-100 flex justify-between items-center">
+                  <span className="font-bold text-gray-900">Net Amount:</span>
+                  <span className="text-xl font-black text-pink-600">₹{(createdOrder.amount / 100).toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Payment Method</label>
+                <select 
+                  className="w-full p-3 bg-white border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                >
+                  <option value="UPI">UPI</option>
+                  <option value="Card">Credit / Debit Card</option>
+                  <option value="NetBanking">Net Banking</option>
+                </select>
+              </div>
+
+              {paymentMethod === "UPI" && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">UPI Number / ID</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. 9876543210@ybl" 
+                    className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                    value={upiId}
+                    onChange={(e) => setUpiId(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
+              <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700 text-white shadow-md py-6 text-lg font-bold mt-4 transition-all hover:scale-[1.02]">
+                Submit Payment
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

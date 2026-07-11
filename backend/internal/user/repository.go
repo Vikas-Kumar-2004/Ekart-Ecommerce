@@ -114,6 +114,30 @@ func (r *repository) CreateSession(ctx context.Context, session *Session) error 
 	return err
 }
 
+func (r *repository) GetSessionByRefreshToken(ctx context.Context, refreshToken string) (*Session, error) {
+	query := `SELECT id, user_id, refresh_token, is_active, expires_at, created_at, updated_at FROM sessions WHERE refresh_token = $1`
+	var s Session
+	err := r.db.QueryRow(ctx, query, refreshToken).Scan(
+		&s.ID, &s.UserID, &s.RefreshToken, &s.IsActive, &s.ExpiresAt, &s.CreatedAt, &s.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &s, nil
+}
+
+func (r *repository) UpdateSession(ctx context.Context, session *Session) error {
+	query := `
+		UPDATE sessions 
+		SET refresh_token = $1, is_active = $2, expires_at = $3, updated_at = NOW()
+		WHERE id = $4
+	`
+	_, err := r.db.Exec(ctx, query,
+		session.RefreshToken, session.IsActive, session.ExpiresAt, session.ID,
+	)
+	return err
+}
+
 func (r *repository) GetAll(ctx context.Context) ([]*User, error) {
     query := `SELECT id, first_name, last_name, profile_pic, profile_pic_public_id, email, password, role, token, refresh_token, is_verified, is_logged_in, otp, otp_expiry, address, city, zip_code, phone_no, created_at, updated_at FROM users`
     rows, err := r.db.Query(ctx, query)

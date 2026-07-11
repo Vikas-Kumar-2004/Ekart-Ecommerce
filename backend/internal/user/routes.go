@@ -11,8 +11,10 @@ func RegisterRoutes(r *gin.RouterGroup, h *Handler, authMiddleware gin.HandlerFu
 	userGroup := r.Group("/user")
 	{
 		// Public
-		userGroup.POST("/register", h.Register)
-		userGroup.POST("/login", h.Login)
+		rateLimiter := middleware.RateLimitMiddleware()
+		userGroup.POST("/register", rateLimiter, h.Register)
+		userGroup.POST("/login", rateLimiter, h.Login)
+		userGroup.POST("/refresh-token", h.RefreshToken)
 		userGroup.POST("/verify-otp/:email", h.VerifyOTP)
 		userGroup.POST("/forgot-password", h.ForgotPassword)
 		userGroup.POST("/change-password/:email", h.ChangePassword)
