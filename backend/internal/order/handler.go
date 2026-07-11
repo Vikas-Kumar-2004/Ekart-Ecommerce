@@ -163,3 +163,34 @@ func (h *Handler) GetMyOrders(c *gin.Context) {
 		"orders":  orders,
 	})
 }
+
+// @Summary      Update order status
+// @Tags         Order
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id path string true "Order ID"
+// @Param        request body UpdateOrderStatusRequest true "Order status payload"
+// @Success      200  {object}  map[string]any
+// @Router       /orders/status/{id} [put]
+func (h *Handler) UpdateOrderStatus(c *gin.Context) {
+	orderIDStr := c.Param("id")
+	orderID, err := uuid.Parse(orderIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "invalid order id"})
+		return
+	}
+
+	var req UpdateOrderStatusRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "invalid request body", "error": err.Error()})
+		return
+	}
+
+	err = h.svc.UpdateOrderStatus(c.Request.Context(), orderID, &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Order status updated successfully"})
+}

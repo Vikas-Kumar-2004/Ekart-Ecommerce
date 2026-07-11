@@ -18,5 +18,6 @@ func RegisterRoutes(r *gin.RouterGroup, h *Handler, authMiddleware gin.HandlerFu
 	admin := orderGroup.Group("/", authMiddleware, middleware.IsAdmin)
 	{
 		admin.GET("/all", h.GetAllOrders)
+		admin.PUT("/status/:id", h.UpdateOrderStatus)
 	}
 }

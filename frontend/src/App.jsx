@@ -25,6 +25,7 @@ import UserInfo from './pages/Admin/UserInfo'
 import AdminSales from './pages/Admin/AdminSales'
 import Footer from './components/Footer'
 import MyOrder from './pages/MyOrder'
+import ForgotPassword from './pages/ForgotPassword'
 
 const router = createBrowserRouter([
   {
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
   {
     path: '/signup',
     element: <Signup />
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPassword />
   },
   {
     path: '/verify',

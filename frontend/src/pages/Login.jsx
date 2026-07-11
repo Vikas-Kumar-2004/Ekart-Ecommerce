@@ -86,12 +86,6 @@ const Login = () => {
                         <div className="grid gap-2">
                             <div className="flex items-center">
                                 <Label htmlFor="password">Password</Label>
-                                <Link
-                                    to="#"
-                                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                                >
-                                    Forgot your password?
-                                </Link>
                             </div>
                             <div className='relative'>
                                 <Input
@@ -113,6 +107,9 @@ const Login = () => {
                         </div>
                     </div>
                 </CardContent>
+                <div className="flex justify-end px-6 pb-2 -mt-4">
+                    <Link to="/forgot-password" className="text-sm text-pink-600 hover:text-pink-800 font-medium">Forgot Password?</Link>
+                </div>
                 <CardFooter className="flex-col gap-2">
                     <Button onClick={submitHandler} type="submit" className="w-full bg-pink-600 hover:bg-pink-500">
                          {

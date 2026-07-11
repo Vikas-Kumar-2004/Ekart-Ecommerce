@@ -40,8 +40,20 @@ func (r *repository) SaveProducts(ctx context.Context, products []OrderItem) err
 }
 
 func (r *repository) GetByID(ctx context.Context, id uuid.UUID) (*Order, error) {
-	// scan karo yahan
-	return nil, nil
+	query := `
+		SELECT id, user_id, amount, tax, shipping, currency, status, razorpay_order_id, razorpay_payment_id, razorpay_signature, created_at, updated_at
+		FROM orders
+		WHERE id = $1
+	`
+	o := &Order{}
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&o.ID, &o.UserID, &o.Amount, &o.Tax, &o.Shipping,
+		&o.Currency, &o.Status, &o.RazorpayOrderID, &o.RazorpayPaymentID, &o.RazorpaySignature, &o.CreatedAt, &o.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return o, nil
 }
 
 func (r *repository) GetByUserID(ctx context.Context, userID uuid.UUID) ([]*Order, error) {
@@ -62,6 +74,12 @@ func (r *repository) UpdateStatus(ctx context.Context, razorpayOrderID string, s
 		&o.Currency, &o.Status, &o.RazorpayOrderID, &o.CreatedAt, &o.UpdatedAt,
 	)
 	return o, err
+}
+
+func (r *repository) UpdateStatusByID(ctx context.Context, id uuid.UUID, status OrderStatus) error {
+	query := `UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2`
+	_, err := r.db.Exec(ctx, query, status, id)
+	return err
 }
 
 // JS ka findOneAndUpdate({ status: "Paid", razorpayPaymentId, razorpaySignature })
