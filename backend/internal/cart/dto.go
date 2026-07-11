@@ -4,6 +4,7 @@ import "github.com/google/uuid"
 
 type AddToCartRequest struct {
 	ProductID uuid.UUID `json:"productId"`
+	Quantity  int       `json:"quantity"`
 }
 
 type UpdateCartItemRequest struct {

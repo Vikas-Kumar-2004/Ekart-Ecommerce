@@ -37,6 +37,12 @@ func (s *service) AddToCart(ctx context.Context, userID uuid.UUID, req *AddToCar
 		return nil, errors.New("product not found")
 	}
 
+	// Default quantity to 1 if not provided or less than 1
+	qty := req.Quantity
+	if qty < 1 {
+		qty = 1
+	}
+
 	// 2. user ka cart dhundho
 	cart, err := s.repo.GetByUserID(ctx, userID)
 
@@ -46,13 +52,13 @@ func (s *service) AddToCart(ctx context.Context, userID uuid.UUID, req *AddToCar
 		newCart := &Cart{
 			ID:         newCartID,
 			UserID:     userID,
-			TotalPrice: product.ProductPrice,
+			TotalPrice: product.ProductPrice * float64(qty),
 			Items: []CartItem{
 				{
 					ID:        uuid.New(),
 					CartID:    newCartID,
 					ProductID: req.ProductID,
-					Quantity:  1,
+					Quantity:  qty,
 					Price:     product.ProductPrice,
 				},
 			},
@@ -78,7 +84,7 @@ func (s *service) AddToCart(ctx context.Context, userID uuid.UUID, req *AddToCar
 
 	if itemIndex > -1 {
 		// product already hai — quantity badhao
-		cart.Items[itemIndex].Quantity += 1
+		cart.Items[itemIndex].Quantity += qty
 		if err := s.repo.UpdateItemQuantity(ctx, cart.ID, req.ProductID, cart.Items[itemIndex].Quantity); err != nil {
 			return nil, err
 		}
@@ -88,7 +94,7 @@ func (s *service) AddToCart(ctx context.Context, userID uuid.UUID, req *AddToCar
 			ID:        uuid.New(),
 			CartID:    cart.ID,
 			ProductID: req.ProductID,
-			Quantity:  1,
+			Quantity:  qty,
 			Price:     product.ProductPrice,
 		}
 		if err := s.repo.AddItem(ctx, &newItem); err != nil {

@@ -8,11 +8,12 @@ import { ShoppingCart } from 'lucide-react'
 import axios from 'axios'
 
 const ProductDesc = ({ product }) => {
+  const [quantity, setQuantity] = React.useState(1)
   const dispatch = useDispatch()
   const accessToken = localStorage.getItem('accessToken')
   const addToCart = async (productId) => {
     try {
-      const res = await axios.post(`${import.meta.env.VITE_URL}/api/v1/cart/add`, { productId }, {
+      const res = await axios.post(`${import.meta.env.VITE_URL}/api/v1/cart/add`, { productId, quantity }, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       if (res.data.success) {
@@ -31,7 +32,7 @@ const ProductDesc = ({ product }) => {
       <p className='line-clamp-12 text-sm md:text-base text-muted-foreground'>{product.productDesc}</p>
       <div className='flex gap-2 items-center'>
         <p className='text-gray-800 font-semibold'>Quantity :</p>
-        <Input type="number" className='w-16' defaultValue={1} />
+        <Input type="number" className='w-16' value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} min={1} />
       </div>
       <Button onClick={() => addToCart(product.id)} className='bg-pink-600 w-full md:w-max mt-4 md:mt-0'><ShoppingCart className="mr-2 h-4 w-4"/>Add to Cart</Button>
     </div>
