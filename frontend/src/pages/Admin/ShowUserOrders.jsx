@@ -3,16 +3,17 @@ import axios from 'axios'
 import { ArrowLeft } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 
 const ShowUserOrders = () => {
   const params = useParams()
   const navigate = useNavigate()
   const [userOrder, setUserOrder] = useState([])
   const [loading, setLoading] = useState(true)
+  const accessToken = localStorage.getItem('accessToken')
 
   const getUserOrders = async () => {
     try {
-      const accessToken = localStorage.getItem('accessToken')
       const res = await axios.get(`${import.meta.env.VITE_URL}/api/v1/orders/user-order/${params.userId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`
@@ -32,7 +33,30 @@ const ShowUserOrders = () => {
     getUserOrders()
   }, [])
 
-  console.log(userOrder);
+  const updateStatus = async (orderId, newStatus) => {
+    try {
+        const { data } = await axios.put(
+            `${import.meta.env.VITE_URL}/api/v1/orders/status/${orderId}`,
+            { status: newStatus },
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        if (data.success) {
+            toast.success(`Status updated to ${newStatus}`);
+            getUserOrders(); // Refresh to get updated status
+        }
+    } catch (error) {
+        toast.error(error.response?.data?.message || "Failed to update status");
+    }
+  };
+
+  const statusColors = {
+      Pending: "bg-yellow-100 text-yellow-700",
+      Paid: "bg-blue-100 text-blue-700",
+      Processing: "bg-purple-100 text-purple-700",
+      Shipped: "bg-orange-100 text-orange-700",
+      Delivered: "bg-green-100 text-green-700",
+      Failed: "bg-red-100 text-red-700"
+  };
 
   return (
     <div className='w-full md:pl-[350px] px-4 md:pr-10 py-20 flex flex-col gap-3'>
@@ -87,9 +111,17 @@ const ShowUserOrders = () => {
                       Email: {order.user?.email || "N/A"}
                     </p>
                   </div>
-                  <span className={`${order.status === 'Paid' ? 'bg-green-500' : order.status === 'Failed' ? 'bg-red-500' : 'bg-orange-300'} text-white px-3 py-1 text-sm font-medium rounded-full shadow-sm`}>
-                    {order.status}
-                  </span>
+                  <select 
+                      className={`px-3 py-1 text-sm font-bold border-none outline-none cursor-pointer rounded-full shadow-sm ${statusColors[order.status] || "bg-gray-100 text-gray-700"}`}
+                      value={order.status}
+                      onChange={(e) => updateStatus(order.id, e.target.value)}
+                  >
+                      <option value="Pending">Pending</option>
+                      <option value="Paid">Paid</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Shipped">Shipped</option>
+                      <option value="Delivered">Delivered</option>
+                  </select>
                 </div>
 
                 {/* Products */}

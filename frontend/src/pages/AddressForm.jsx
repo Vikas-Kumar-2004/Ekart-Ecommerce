@@ -397,7 +397,7 @@ const AddressForm = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between">
-                <span>Subtotal ({cart.length} items)</span>
+                <span>Subtotal ({cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0} items)</span>
                 <span>₹{subtotal.toLocaleString("en-IN")}</span>
               </div>
               <div className="flex justify-between">

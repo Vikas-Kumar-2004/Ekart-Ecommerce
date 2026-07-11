@@ -1,6 +1,7 @@
 import Breadcrums from '@/components/Breadcrums'
 import ProductDesc from '@/components/ProductDesc'
 import ProductImg from '@/components/ProductImg'
+import ProductReviews from '@/components/ProductReviews'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import {  useParams } from 'react-router-dom'
@@ -19,6 +20,7 @@ const SingleProduct = () => {
          <ProductImg images={product.productImg}/>
          <ProductDesc product={product}/>
       </div>
+      <ProductReviews productId={product.id} />
     </div>
   )
 }

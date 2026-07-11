@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button'
 import axios from 'axios'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, MapPin } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import OrderTracker from '../components/OrderTracker'
 
 import { toast } from 'sonner'
 
@@ -10,6 +11,11 @@ const MyOrder = () => {
   const navigate = useNavigate()
   const [userOrder, setUserOrder] = useState([])
   const [loading, setLoading] = useState(true)
+  const [trackingOrderIds, setTrackingOrderIds] = useState({})
+
+  const toggleTrackOrder = (orderId) => {
+    setTrackingOrderIds(prev => ({ ...prev, [orderId]: !prev[orderId] }))
+  }
 
   // Dummy payment form state
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -147,8 +153,21 @@ const MyOrder = () => {
                         Pay Now
                       </Button>
                     )}
+                    {order.status !== 'Pending' && order.status !== 'Failed' && (
+                      <Button onClick={() => toggleTrackOrder(order.id)} size="sm" variant="outline" className="border-pink-600 text-pink-600 hover:bg-pink-50 flex gap-2">
+                        <MapPin className="w-4 h-4" />
+                        {trackingOrderIds[order.id] ? 'Hide Tracking' : 'Track Order'}
+                      </Button>
+                    )}
                   </div>
                 </div>
+
+                {/* Tracker UI */}
+                {trackingOrderIds[order.id] && (
+                  <div className="mb-6">
+                    <OrderTracker status={order.status} />
+                  </div>
+                )}
 
                 {/* Products */}
                 <div>

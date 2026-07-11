@@ -12,6 +12,7 @@ import (
 	"go-ekart/internal/middleware"
 	"go-ekart/internal/order"
 	"go-ekart/internal/product"
+	"go-ekart/internal/review"
 	"go-ekart/internal/user"
 )
 
@@ -56,6 +57,12 @@ func New(db *pgxpool.Pool, h *Handlers) *gin.Engine {
 	order.RegisterRoutes(
 		apiV1,
 		h.Order,
+		middleware.Authentication(),
+	)
+
+	review.RegisterRoutes(
+		apiV1,
+		h.Review,
 		middleware.Authentication(),
 	)
 

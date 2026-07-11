@@ -71,3 +71,7 @@ type OrderUserInfo struct {
 	Name  string    `json:"name"`
 	Email string    `json:"email"`
 }
+
+type UpdateOrderStatusRequest struct {
+	Status OrderStatus `json:"status" binding:"required"`
+}

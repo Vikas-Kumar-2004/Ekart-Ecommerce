@@ -162,6 +162,30 @@ func (s *service) GetAllOrders(ctx context.Context) ([]*OrderResponse, error) {
 	return response, nil
 }
 
+func (s *service) UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, req *UpdateOrderStatusRequest) error {
+	// 1. Valid status check
+	validStatuses := []OrderStatus{StatusPending, StatusProcessing, StatusShipped, StatusDelivered}
+	isValid := false
+	for _, st := range validStatuses {
+		if req.Status == st {
+			isValid = true
+			break
+		}
+	}
+	if !isValid {
+		return errors.New("invalid order status")
+	}
+
+	// 2. Check if order exists
+	order, err := s.repo.GetByID(ctx, orderID)
+	if err != nil || order == nil {
+		return errors.New("order not found")
+	}
+
+	// 3. Update status
+	return s.repo.UpdateStatusByID(ctx, orderID, req.Status)
+}
+
 // ── Helper ────────────────────────────────────────────────────────────────────
 func toOrderResponse(o *Order) *OrderResponse {
 	var items []OrderItemResponse

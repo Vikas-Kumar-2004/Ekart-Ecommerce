@@ -12,6 +12,7 @@ type Repository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*Order, error)
 	GetByUserID(ctx context.Context, userID uuid.UUID) ([]*Order, error)
 	UpdateStatus(ctx context.Context, razorpayOrderID string, status OrderStatus) (*Order, error)
+	UpdateStatusByID(ctx context.Context, id uuid.UUID, status OrderStatus) error
 	UpdatePayment(ctx context.Context, razorpayOrderID, paymentID, signature string) (*Order, error)
 	ClearCart(ctx context.Context, cartID uuid.UUID) error
 	GetAll(ctx context.Context) ([]*Order, error)
@@ -23,4 +24,5 @@ type Service interface {
 	VerifyPayment(ctx context.Context, userID uuid.UUID, req *VerifyPaymentRequest) (*Order, error)
 	GetAllOrders(ctx context.Context) ([]*OrderResponse, error)
 	GetUserOrders(ctx context.Context, userID uuid.UUID) ([]*OrderResponse, error)
+	UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, req *UpdateOrderStatusRequest) error
 }

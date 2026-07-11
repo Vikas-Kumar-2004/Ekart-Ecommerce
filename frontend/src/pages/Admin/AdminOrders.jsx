@@ -1,31 +1,58 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const accessToken = localStorage.getItem("accessToken");
-    console.log('orders', orders);
+
+    const fetchOrders = async () => {
+        try {
+            const { data } = await axios.get(`${import.meta.env.VITE_URL}/api/v1/orders/all`, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            if (data.success) setOrders(data.orders);
+        } catch (error) {
+            console.error("❌ Failed to fetch admin orders:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const { data } = await axios.get(`${import.meta.env.VITE_URL}/api/v1/orders/all`, {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                });
-                if (data.success) setOrders(data.orders);
-            } catch (error) {
-                console.error("❌ Failed to fetch admin orders:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchOrders();
     }, [accessToken]);
+
+    const updateStatus = async (orderId, newStatus) => {
+        try {
+            const { data } = await axios.put(
+                `${import.meta.env.VITE_URL}/api/v1/orders/status/${orderId}`,
+                { status: newStatus },
+                { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+            if (data.success) {
+                toast.success(`Status updated to ${newStatus}`);
+                fetchOrders(); // Refresh to get updated status
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to update status");
+        }
+    };
 
     if (loading) {
         return <div className="text-center py-20 text-gray-500">Loading all orders...</div>;
     }
+
+    const statusColors = {
+        Pending: "bg-yellow-100 text-yellow-700",
+        Paid: "bg-blue-100 text-blue-700",
+        Processing: "bg-purple-100 text-purple-700",
+        Shipped: "bg-orange-100 text-orange-700",
+        Delivered: "bg-green-100 text-green-700",
+        Failed: "bg-red-100 text-red-700"
+    };
+
     return (
         <div className="w-full md:pl-[350px] py-20 px-4 md:pr-10 mx-auto ">
             <h1 className="text-3xl font-bold mb-6">Admin - All Orders</h1>
@@ -42,7 +69,7 @@ const AdminOrders = () => {
                                     <span className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Order ID</span>
                                     <p className="font-mono text-sm text-gray-800 break-all mt-0.5">{order.id}</p>
                                 </div>
-                                <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${order.status === "Paid" ? "bg-green-100 text-green-700" : order.status === "Pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}`}>
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${statusColors[order.status] || "bg-gray-100 text-gray-700"}`}>
                                     {order.status}
                                 </span>
                             </div>

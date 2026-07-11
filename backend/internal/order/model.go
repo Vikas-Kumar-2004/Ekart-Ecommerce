@@ -9,11 +9,12 @@ import (
 type OrderStatus string
 
 const (
-	StatusPending   OrderStatus = "Pending"
-	StatusPaid      OrderStatus = "Paid"
-	StatusFailed    OrderStatus = "Failed"
-	StatusShipped   OrderStatus = "Shipped"
-	StatusDelivered OrderStatus = "Delivered"
+	StatusPending    OrderStatus = "Pending"
+	StatusPaid       OrderStatus = "Paid"
+	StatusFailed     OrderStatus = "Failed"
+	StatusProcessing OrderStatus = "Processing"
+	StatusShipped    OrderStatus = "Shipped"
+	StatusDelivered  OrderStatus = "Delivered"
 )
 
 type Order struct {
