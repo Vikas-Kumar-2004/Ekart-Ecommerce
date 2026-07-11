@@ -70,23 +70,44 @@ func (s *service) AddProduct(ctx context.Context, userID uuid.UUID, req *AddProd
 	return toProductResponse(p), nil
 }
 
-func (s *service) GetAllProducts(ctx context.Context) ([]*ProductResponse, error) {
-	products, err := s.repo.GetAll(ctx)
+func (s *service) GetAllProducts(ctx context.Context, filter ProductFilter, page, limit int) (*PaginatedProductResponse, error) {
+	products, totalCount, err := s.repo.GetAll(ctx, filter, page, limit)
 	if err != nil {
 		return nil, err
 	}
 
-	// JS ka if (!products) — Go mein empty slice return karo, nil nahi
-	if len(products) == 0 {
-		return []*ProductResponse{}, nil
+	totalPages := totalCount / limit
+	if totalCount%limit != 0 || totalCount == 0 {
+		totalPages++
 	}
 
-	var response []*ProductResponse
-	for _, p := range products {
-		response = append(response, toProductResponse(p))
+	var productResponses []*ProductResponse
+	// JS ka if (!products) — Go mein empty slice return karo, nil nahi
+	if len(products) == 0 {
+		productResponses = []*ProductResponse{}
+	} else {
+		for _, p := range products {
+			productResponses = append(productResponses, toProductResponse(p))
+		}
 	}
-	return response, nil
+
+	return &PaginatedProductResponse{
+		Products:    productResponses,
+		TotalItems:  totalCount,
+		TotalPages:  totalPages,
+		CurrentPage: page,
+		Limit:       limit,
+	}, nil
 }
+
+func (s *service) GetCategories(ctx context.Context) ([]string, error) {
+	return s.repo.GetUniqueCategories(ctx)
+}
+
+func (s *service) GetBrands(ctx context.Context) ([]string, error) {
+	return s.repo.GetUniqueBrands(ctx)
+}
+
 
 func (s *service) DeleteProduct(ctx context.Context, productID uuid.UUID) error {
 	// 1. product dhundho

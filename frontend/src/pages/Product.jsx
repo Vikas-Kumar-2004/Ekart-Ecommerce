@@ -23,13 +23,29 @@ const Product = () => {
 
   const dispatch = useDispatch();
 
-  const getAllProducts = async () => {
+  const [totalPages, setTotalPages] = useState(1);
+
+  const getAllProducts = async (page = 1) => {
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_URL}/api/v1/product/getallproducts`);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: productsPerPage.toString(),
+        search: search.trim(),
+        category: category,
+        brand: brand,
+        minPrice: priceRange[0].toString(),
+        maxPrice: priceRange[1].toString(),
+        sortOrder: sortOrder,
+      });
+
+      const res = await axios.get(`${import.meta.env.VITE_URL}/api/v1/product/getallproducts?${params.toString()}`);
       if (res.data.success) {
         setAllProducts(res.data.products);
         dispatch(setProducts(res.data.products));
+        if (res.data.pagination) {
+          setTotalPages(res.data.pagination.totalPages);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -38,47 +54,19 @@ const Product = () => {
     }
   };
 
-  // Filtering + sorting
+  // Filtering + sorting (Fetch from backend on filter change)
+  // Reset page to 1 when filters change
   useEffect(() => {
-    if (allProducts.length === 0) return;
+    setCurrentPage(1);
+  }, [search, category, brand, sortOrder, priceRange]);
 
-    let filtered = [...allProducts];
-
-    if (search.trim() !== "") {
-      filtered = filtered.filter(p =>
-        p.productName?.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-
-    if (category !== "All") {
-      filtered = filtered.filter(p => p.category === category);
-    }
-
-    if (brand !== "All") {
-      filtered = filtered.filter(p => p.brand === brand);
-    }
-
-    filtered = filtered.filter(p => p.productPrice >= priceRange[0] && p.productPrice <= priceRange[1]);
-
-    if (sortOrder === "lowToHigh") {
-      filtered.sort((a, b) => a.productPrice - b.productPrice);
-    } else if (sortOrder === "highToLow") {
-      filtered.sort((a, b) => b.productPrice - a.productPrice);
-    }
-
-    dispatch(setProducts(filtered));
-    setCurrentPage(1); // reset to first page whenever filters change
-  }, [search, category, brand, sortOrder, priceRange, allProducts, dispatch]);
-
+  // Fetch products when page or filters change
   useEffect(() => {
-    getAllProducts();
-  }, []);
+    getAllProducts(currentPage);
+  }, [currentPage, search, category, brand, sortOrder, priceRange]);
 
-  // Pagination logic
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
-  const totalPages = Math.ceil(products.length / productsPerPage);
+  // Remove local array slicing, use Redux products directly (already filtered/paginated)
+  const currentProducts = products;
 
   return (
     <div className="pt-20 pb-10">

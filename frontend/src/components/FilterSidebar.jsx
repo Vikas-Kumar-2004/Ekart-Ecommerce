@@ -9,13 +9,26 @@ const FilterSidebar = ({
   setBrand,
   priceRange,
   setPriceRange,
-  allProducts
 }) => {
-  const Categories = allProducts.map(p => p.category);
-  const UniqueCategory = ["All", ...new Set(Categories)];
+  const [categories, setCategories] = React.useState(["All"]);
+  const [brands, setBrands] = React.useState(["All"]);
 
-  const Brands = allProducts.map(p => p.brand);
-  const UniqueBrand = ["All", ...new Set(Brands)];
+  React.useEffect(() => {
+    // Fetch unique categories and brands from backend
+    const fetchFilters = async () => {
+      try {
+        const [catRes, brandRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_URL}/api/v1/product/categories`).then(r => r.json()),
+          fetch(`${import.meta.env.VITE_URL}/api/v1/product/brands`).then(r => r.json())
+        ]);
+        if (catRes.success) setCategories(["All", ...catRes.categories]);
+        if (brandRes.success) setBrands(["All", ...brandRes.brands]);
+      } catch (err) {
+        console.error("Failed to fetch filters", err);
+      }
+    };
+    fetchFilters();
+  }, []);
 
   const handleCategoryClick = (cat) => {
     setCategory(cat);
@@ -56,7 +69,7 @@ const FilterSidebar = ({
       {/* Category */}
       <h1 className='mt-5 font-semibold text-xl'>Category</h1>
       <div className='flex flex-col gap-2 mt-3'>
-        {UniqueCategory.map((item, index) => (
+        {categories.map((item, index) => (
           <div key={index} className='flex items-center gap-2'>
             <input
               type="radio"
@@ -75,7 +88,7 @@ const FilterSidebar = ({
         value={brand}
         onChange={handleBrandChange}
       >
-        {UniqueBrand.map((item, index) => (
+        {brands.map((item, index) => (
           <option key={index} value={item}>{item.toUpperCase()}</option>
         ))}
       </select>
