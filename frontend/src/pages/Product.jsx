@@ -25,6 +25,8 @@ const Product = () => {
 
   const [totalPages, setTotalPages] = useState(1);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const getAllProducts = async (page = 1) => {
     try {
       setLoading(true);
@@ -80,15 +82,25 @@ const Product = () => {
             setBrand={setBrand}
             category={category}
             setCategory={setCategory}
-            allProducts={allProducts}
             priceRange={priceRange}
             setPriceRange={setPriceRange}
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
           />
         </div>
 
         {/* Main product section */}
-        <div className="flex flex-col flex-1">
-          <div className="flex justify-end mb-4">
+        <div className="flex flex-col flex-1 px-4 md:px-0 mt-10 md:mt-0">
+          <div className="flex justify-between md:justify-end mb-4">
+            <Button 
+              variant="outline" 
+              className="md:hidden flex items-center gap-2"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+              Filters
+            </Button>
+
             <Select onValueChange={(value) => setSortOrder(value)}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Sort by price" />

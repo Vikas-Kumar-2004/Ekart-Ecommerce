@@ -9,6 +9,8 @@ const FilterSidebar = ({
   setBrand,
   priceRange,
   setPriceRange,
+  isOpen,
+  onClose
 }) => {
   const [categories, setCategories] = React.useState(["All"]);
   const [brands, setBrands] = React.useState(["All"]);
@@ -32,10 +34,12 @@ const FilterSidebar = ({
 
   const handleCategoryClick = (cat) => {
     setCategory(cat);
+    if (onClose) onClose();
   };
 
   const handleBrandChange = (e) => {
     setBrand(e.target.value);
+    if (onClose) onClose();
   };
 
   const handleMinChange = (e) => {
@@ -53,10 +57,35 @@ const FilterSidebar = ({
     setCategory("All");
     setBrand("All");
     setPriceRange([0, 999999]);
+    if (onClose) onClose();
   };
 
   return (
-    <div className='bg-gray-100 mt-10 p-4 rounded-md h-max hidden md:block w-64'>
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar Container */}
+      <div 
+        className={`bg-gray-100 p-4 md:rounded-md h-screen md:h-max w-[280px] md:w-64
+          fixed top-0 left-0 z-50 md:static md:block md:translate-x-0 md:mt-10
+          transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto pb-24 md:pb-4`}
+      >
+        {/* Mobile Header */}
+        <div className='flex justify-between items-center md:hidden mb-6 mt-4'>
+          <span className="font-bold text-2xl text-pink-600">Filters</span>
+          <button onClick={onClose} className="p-2 text-gray-600 hover:text-gray-900 bg-gray-200 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       {/* Search */}
       <input
         type="text"
@@ -70,13 +99,15 @@ const FilterSidebar = ({
       <h1 className='mt-5 font-semibold text-xl'>Category</h1>
       <div className='flex flex-col gap-2 mt-3'>
         {categories.map((item, index) => (
-          <div key={index} className='flex items-center gap-2'>
+          <div key={`cat-${index}`} className='flex items-center gap-2'>
             <input
+              id={`cat-${index}`}
               type="radio"
               checked={category === item}
               onChange={() => handleCategoryClick(item)}
+              className="cursor-pointer"
             />
-            <label className='cursor-pointer uppercase'>{item}</label>
+            <label htmlFor={`cat-${index}`} className='cursor-pointer uppercase flex-1'>{item}</label>
           </div>
         ))}
       </div>
@@ -145,7 +176,8 @@ const FilterSidebar = ({
       >
         Reset Filters
       </button>
-    </div>
+      </div>
+    </>
   );
 };
 

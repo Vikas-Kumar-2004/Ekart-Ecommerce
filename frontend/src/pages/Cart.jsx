@@ -85,32 +85,36 @@ const handleRemove = async (productId) => {
             </Button>
             <h1 className='text-2xl font-bold text-gray-800'>Shopping Cart</h1>
           </div>
-          <div className='max-w-7xl mx-auto flex gap-7'>
+          <div className='max-w-7xl mx-auto flex flex-col lg:flex-row gap-7 px-4 md:px-0'>
             <div className='flex flex-col gap-5 flex-1'>
               {cart?.items?.map((product, index) => {
-                return <Card key={index} className=''>
-                  <div className='flex justify-between  items-center pr-7'>
-                    <div className='flex items-center w-[350px]'>
-                      <img src={product?.productId?.productImg?.[0]?.url || userLogo} alt="" className='w-25 h-25' />
-                      <div className='w-[280px]'>
-                        <h1 className='font-semibold truncate'>{product?.productId?.productName}</h1>
-                        <p>₹{product?.productId?.productPrice}</p>
+                return <Card key={index} className='p-4 md:p-0'>
+                  <div className='flex flex-col md:flex-row justify-between items-start md:items-center md:pr-7 gap-4 md:gap-0'>
+                    <div className='flex items-center w-full md:w-[350px] gap-4'>
+                      <img src={product?.productId?.productImg?.[0]?.url || userLogo} alt="" className='w-20 h-20 md:w-25 md:h-25 object-cover rounded' />
+                      <div className='flex-1 md:w-[280px]'>
+                        <h1 className='font-semibold line-clamp-2 md:truncate'>{product?.productId?.productName}</h1>
+                        <p className='text-gray-600'>₹{product?.productId?.productPrice}</p>
                       </div>
-
                     </div>
-                    <div className='flex gap-5 items-center'>
-                      <Button onClick={() => handleUpdateQuantity( product.productId.id, 'decrease' )} variant='outline'>-</Button>
-                      <span>{product.quantity}</span>
-                      <Button onClick={() => handleUpdateQuantity( product.productId.id, 'increase' )} variant='outline'>+</Button>
+                    
+                    <div className='flex w-full md:w-auto justify-between items-center gap-5'>
+                      <div className='flex gap-4 items-center'>
+                        <Button onClick={() => handleUpdateQuantity( product.productId.id, 'decrease' )} variant='outline' size="sm">-</Button>
+                        <span className='font-medium'>{product.quantity}</span>
+                        <Button onClick={() => handleUpdateQuantity( product.productId.id, 'increase' )} variant='outline' size="sm">+</Button>
+                      </div>
+                      <div className='flex items-center gap-4 md:gap-5'>
+                        <p className='font-bold text-lg md:text-base whitespace-nowrap'>₹{(product?.productId?.productPrice) * (product?.quantity)}</p>
+                        <button onClick={() => handleRemove(product?.productId?.id)} className='flex text-red-500 items-center gap-1 cursor-pointer hover:bg-red-50 p-2 rounded-md transition-colors'><Trash2 className='w-5 h-5 md:w-4 md:h-4' /><span className="hidden md:inline">Remove</span></button>
+                      </div>
                     </div>
-                    <p className='font-semibold'>₹{(product?.productId?.productPrice) * (product?.quantity)}</p>
-                    <p onClick={() => handleRemove(product?.productId?.id)} className='flex text-red-500 items-center gap-1 cursor-pointer'><Trash2 className='w-4 h-4' />Remove</p>
                   </div>
                 </Card>
               })}
             </div>
-            <div>
-              <Card className="w-[400px]">
+            <div className='w-full lg:w-[400px]'>
+              <Card className="w-full">
                 <CardHeader>
                   <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
