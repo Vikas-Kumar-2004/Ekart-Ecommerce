@@ -22,7 +22,19 @@ const ProductCard = ({ product, loading }) => {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             if(res.data.success){
-                toast.success('Product added to cart')
+                const phoneNumber = "918178960547";
+                const productUrl = window.location.origin + `/products/${product.id}`;
+                const message = `Hi! I just added *${productName}* to my cart. Price: ₹${productPrice}. Here is the link: ${productUrl}. I need some help before ordering.`;
+                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+                toast.success('Product added to cart', {
+                    description: `${productName} (₹${productPrice})`,
+                    action: {
+                        label: 'WhatsApp Help',
+                        onClick: () => window.open(whatsappUrl, "_blank")
+                    },
+                    duration: 5000,
+                });
                 dispatch(setCart(res.data.cart));
             }
         } catch (error) {

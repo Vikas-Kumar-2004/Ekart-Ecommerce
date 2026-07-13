@@ -46,10 +46,10 @@ const Login = () => {
                 }
             })
             if(res.data.success){
-               navigate('/')
-               dispatch(setUser(res.data.user))
                localStorage.setItem("accessToken", res.data.token)
                localStorage.setItem("refreshToken", res.data.refreshToken)
+               dispatch(setUser(res.data.user))
+               navigate('/')
                toast.success(res.data.message)
             }
         } catch (error) {

@@ -32,9 +32,12 @@ const Navbar = () => {
         } catch (error) {
             console.log(error);
         } finally {
-            dispatch(setUser(null))
-            localStorage.removeItem('accessToken')
-            navigate('/login')
+            navigate('/')
+            setTimeout(() => {
+                dispatch(setUser(null))
+                dispatch(setCart([]))
+                localStorage.removeItem('accessToken')
+            }, 100)
         }
     }
 
