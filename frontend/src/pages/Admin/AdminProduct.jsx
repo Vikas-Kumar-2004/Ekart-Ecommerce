@@ -84,8 +84,15 @@ const AdminProduct = () => {
     setCurrentPage(1);
   }, [searchTerm, category, brand, sortOrder]);
 
+  const isMounted = React.useRef(false);
+
   useEffect(() => {
     fetchProducts(currentPage);
+    if (isMounted.current) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      isMounted.current = true;
+    }
   }, [currentPage, searchTerm, category, brand, sortOrder, dispatch]);
 
   // Handle input changes
@@ -172,7 +179,13 @@ const AdminProduct = () => {
             placeholder="Search Product..."
             className="w-full md:w-[400px] items-center pr-10"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)} />
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              if (e.target.value.trim() !== '') {
+                setCategory("All");
+                setBrand("All");
+              }
+            }} />
           <Search className='absolute right-3 top-2 text-gray-500' size={20} />
         </div>
 

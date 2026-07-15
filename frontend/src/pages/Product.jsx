@@ -81,9 +81,23 @@ const Product = () => {
     setCurrentPage(1);
   }, [search, category, brand, sortOrder, priceRange]);
 
+  const isMounted = React.useRef(false);
+
+  // Enable scroll restoration on mount
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'auto';
+    }
+  }, []);
+
   // Fetch products when page or filters change
   useEffect(() => {
     getAllProducts(currentPage);
+    if (isMounted.current) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      isMounted.current = true;
+    }
   }, [currentPage, search, category, brand, sortOrder, priceRange]);
 
   // Remove local array slicing, use Redux products directly (already filtered/paginated)
@@ -121,7 +135,13 @@ const Product = () => {
                 type="text"
                 placeholder='Search products...'
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  if (e.target.value.trim() !== '') {
+                    setCategory("All");
+                    setBrand("All");
+                  }
+                }}
                 className='bg-white p-2 pl-10 rounded-md border-gray-300 border w-full focus:outline-none focus:ring-2 focus:ring-pink-500'
               />
               <Search className='absolute left-3 top-2.5 text-gray-500' size={18} />
@@ -161,7 +181,7 @@ const Product = () => {
 
           {/* Product Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-7">
-            {loading ? (
+            {(loading && currentProducts.length === 0) ? (
               <p>Loading...</p>
             ) : currentProducts.length > 0 ? (
               currentProducts.map((product, index) => (
