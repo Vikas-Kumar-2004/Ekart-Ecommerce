@@ -36,6 +36,7 @@ const ProductCard = ({ product, loading }) => {
                     duration: 5000,
                 });
                 dispatch(setCart(res.data.cart));
+                navigate('/cart');
             }
         } catch (error) {
             console.error(error);

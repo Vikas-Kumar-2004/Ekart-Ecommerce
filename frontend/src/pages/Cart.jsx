@@ -80,9 +80,7 @@ const handleRemove = async (productId) => {
       {
         cart?.items?.length > 0 ? <div className='max-w-7xl mx-auto '>
           <div className="flex items-center gap-4 mb-7">
-            <Button variant="ghost" onClick={() => navigate(-1)} className="flex items-center gap-2 -ml-4">
-              <ArrowLeft className="w-4 h-4" /> Back
-            </Button>
+            <Button onClick={() => navigate(-1)}><ArrowLeft /></Button>
             <h1 className='text-2xl font-bold text-gray-800'>Shopping Cart</h1>
           </div>
           <div className='max-w-7xl mx-auto flex flex-col lg:flex-row gap-7 px-4 md:px-0'>

@@ -177,7 +177,7 @@ const AdminProduct = () => {
         </div>
 
         <div className='flex flex-col sm:flex-row gap-4'>
-          <Select onValueChange={(value) => setCategory(value)} value={category}>
+          <Select onValueChange={(value) => { setCategory(value); setSearchTerm(""); }} value={category}>
             <SelectTrigger className="w-full sm:w-[160px] bg-white">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
@@ -186,7 +186,7 @@ const AdminProduct = () => {
             </SelectContent>
           </Select>
 
-          <Select onValueChange={(value) => setBrand(value)} value={brand}>
+          <Select onValueChange={(value) => { setBrand(value); setSearchTerm(""); }} value={brand}>
             <SelectTrigger className="w-full sm:w-[160px] bg-white">
               <SelectValue placeholder="Brand" />
             </SelectTrigger>

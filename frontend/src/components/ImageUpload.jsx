@@ -27,20 +27,38 @@ const ImageUpload = ({ productData, setProductData }) => {
     <div className="grid gap-2">
       <Label>Product Images</Label>
 
-      {/* Upload Button */}
-      <Input
-        type="file"
-        id="file-upload"
-        className="hidden"
-        accept="image/*"
-        multiple
-        onChange={handleFiles}
-      />
-      <Button asChild variant="outline">
-        <label htmlFor="file-upload" className="cursor-pointer">
-          Upload Images
-        </label>
-      </Button>
+      {/* Upload Buttons */}
+      <div className="flex gap-4">
+        {/* Gallery Upload */}
+        <Input
+          type="file"
+          id="file-upload"
+          className="hidden"
+          accept="image/*"
+          multiple
+          onChange={handleFiles}
+        />
+        <Button asChild variant="outline" className="flex-1">
+          <label htmlFor="file-upload" className="cursor-pointer">
+            Upload from Gallery
+          </label>
+        </Button>
+
+        {/* Camera Upload */}
+        <Input
+          type="file"
+          id="camera-upload"
+          className="hidden"
+          accept="image/*"
+          capture="environment"
+          onChange={handleFiles}
+        />
+        <Button asChild variant="default" className="flex-1 bg-pink-600 hover:bg-pink-700">
+          <label htmlFor="camera-upload" className="cursor-pointer">
+            Take a Photo
+          </label>
+        </Button>
+      </div>
 
       {/* Image Previews */}
       {productData.productImg.length > 0 && (

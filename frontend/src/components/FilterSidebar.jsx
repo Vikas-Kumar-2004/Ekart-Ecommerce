@@ -9,36 +9,21 @@ const FilterSidebar = ({
   setBrand,
   priceRange,
   setPriceRange,
+  categories,
+  brands,
   isOpen,
   onClose
 }) => {
-  const [categories, setCategories] = React.useState(["All"]);
-  const [brands, setBrands] = React.useState(["All"]);
-
-  React.useEffect(() => {
-    // Fetch unique categories and brands from backend
-    const fetchFilters = async () => {
-      try {
-        const [catRes, brandRes] = await Promise.all([
-          fetch(`${import.meta.env.VITE_URL}/api/v1/product/categories`).then(r => r.json()),
-          fetch(`${import.meta.env.VITE_URL}/api/v1/product/brands`).then(r => r.json())
-        ]);
-        if (catRes.success) setCategories(["All", ...catRes.categories]);
-        if (brandRes.success) setBrands(["All", ...brandRes.brands]);
-      } catch (err) {
-        console.error("Failed to fetch filters", err);
-      }
-    };
-    fetchFilters();
-  }, []);
 
   const handleCategoryClick = (cat) => {
     setCategory(cat);
+    setSearch("");
     if (onClose) onClose();
   };
 
   const handleBrandChange = (e) => {
     setBrand(e.target.value);
+    setSearch("");
     if (onClose) onClose();
   };
 
@@ -86,15 +71,6 @@ const FilterSidebar = ({
             </svg>
           </button>
         </div>
-      {/* Search */}
-      <input
-        type="text"
-        placeholder='Search...'
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className='bg-white p-2 rounded-md border-gray-400 border-2 w-full'
-      />
-
       {/* Category */}
       <h1 className='mt-5 font-semibold text-xl'>Category</h1>
       <div className='flex flex-col gap-2 mt-3'>

@@ -8,8 +8,10 @@ import { ShoppingCart } from 'lucide-react'
 import axios from 'axios'
 
 import { FaWhatsapp } from 'react-icons/fa'
+import { useNavigate } from 'react-router-dom'
 
 const ProductDesc = ({ product }) => {
+  const navigate = useNavigate()
   const [quantity, setQuantity] = React.useState(1)
   const dispatch = useDispatch()
   const accessToken = localStorage.getItem('accessToken')
@@ -34,6 +36,7 @@ const ProductDesc = ({ product }) => {
             duration: 5000,
         });
         dispatch(setCart(res.data.cart));
+        navigate('/cart');
       }
     } catch (error) {
       console.log(error);

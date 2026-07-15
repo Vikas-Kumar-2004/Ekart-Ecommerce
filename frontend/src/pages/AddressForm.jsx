@@ -199,9 +199,7 @@ const AddressForm = () => {
   return (
     <div className="max-w-7xl mx-auto flex flex-col p-4 md:p-10 w-full relative">
       <div className="w-full self-start mb-6">
-        <Button onClick={() => navigate(-1)} variant="ghost" className="flex items-center gap-2 -ml-4">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </Button>
+        <Button onClick={() => navigate(-1)}><ArrowLeft /></Button>
       </div>
       {/* <Stepper currentStep={1} /> Step 2: Address */}
 
