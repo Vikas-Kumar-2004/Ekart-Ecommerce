@@ -11,8 +11,11 @@ import userLogo from '../assets/user.jpg'
 import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import MyOrder from './MyOrder';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
+    const navigate = useNavigate();
     const { user } = useSelector(store => store.user)
     const dispatch = useDispatch()
     const params = useParams()
@@ -89,8 +92,10 @@ const Profile = () => {
 
 
     return (
-        <div className='pt-20 min-h-screen bg-gray-100'>
-
+        <div className='pt-20 min-h-screen bg-gray-100 p-4 md:p-8'>
+            <div className="max-w-7xl mx-auto mb-6">
+                <Button onClick={() => navigate(-1)}><ArrowLeft /></Button>
+            </div>
             <Tabs defaultValue="profile" className="max-w-7xl mx-auto items-center">
                 <TabsList>
                     <TabsTrigger value="profile">Profile</TabsTrigger>

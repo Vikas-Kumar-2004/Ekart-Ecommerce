@@ -197,17 +197,15 @@ const AddressForm = () => {
 
 
   return (
-    <div className="max-w-7xl mx-auto flex flex-col p-10 w-full relative">
+    <div className="max-w-7xl mx-auto flex flex-col p-4 md:p-10 w-full relative">
       <div className="w-full self-start mb-6">
-        <Button onClick={() => navigate(-1)} variant="ghost" className="flex items-center gap-2 -ml-4">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </Button>
+        <Button onClick={() => navigate(-1)}><ArrowLeft /></Button>
       </div>
       {/* <Stepper currentStep={1} /> Step 2: Address */}
 
-      <div className="grid grid-cols-2 items-start gap-20 mt-4 max-w-7xl mx-auto w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 items-start gap-10 lg:gap-20 mt-4 max-w-7xl mx-auto w-full">
         {/* LEFT SIDE */}
-        <div className="space-y-4 p-6 bg-white">
+        <div className="space-y-4 p-0 md:p-6 bg-white w-full">
           {showForm ? (
             // Address Input Form
             <>
@@ -390,8 +388,8 @@ const AddressForm = () => {
         </div>
 
         {/* RIGHT SIDE (Order Summary) */}
-        <div>
-          <Card className="w-[400px]">
+        <div className="w-full lg:w-[400px]">
+          <Card className="w-full">
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>

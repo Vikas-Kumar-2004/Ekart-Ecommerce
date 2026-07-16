@@ -22,8 +22,21 @@ const ProductCard = ({ product, loading }) => {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             if(res.data.success){
-                toast.success('Product added to cart')
+                const phoneNumber = "918178960547";
+                const productUrl = window.location.origin + `/products/${product.id}`;
+                const message = `Hi! I just added *${productName}* to my cart. Price: ₹${productPrice}. Here is the link: ${productUrl}. I need some help before ordering.`;
+                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+                toast.success('Product added to cart', {
+                    description: `${productName} (₹${productPrice})`,
+                    action: {
+                        label: 'WhatsApp Help',
+                        onClick: () => window.open(whatsappUrl, "_blank")
+                    },
+                    duration: 5000,
+                });
                 dispatch(setCart(res.data.cart));
+                navigate('/cart');
             }
         } catch (error) {
             console.error(error);
@@ -31,28 +44,40 @@ const ProductCard = ({ product, loading }) => {
     };
 
     return (
-        <div className='shadow-lg rounded-lg overflow-hidden h-max'>
-            <div className="w-full h-full aspect-square overflow-hidden">
+        <div 
+            className='shadow-lg rounded-lg overflow-hidden h-max cursor-pointer hover:shadow-xl transition-shadow flex flex-col group'
+            onClick={() => navigate(`/products/${product.id}`)}
+        >
+            <div className="w-full h-full aspect-square overflow-hidden bg-gray-100">
                 {
                     loading ? <Skeleton className='rounded-lg w-full h-full' /> : <img
-                        onClick={() => navigate(`/products/${product.id}`)}
                         src={productImg[0]?.url}
-                        alt=""
-                        className="w-full h-full transition-transform duration-300 hover:scale-105"
+                        alt={productName}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                 }
 
             </div>
             {
-                loading ? <div className='px-2 space-y-2 my-2'>
+                loading ? <div className='px-3 space-y-2 my-3'>
                     <Skeleton className='w-[200px] h-4' />
                     <Skeleton className='w-[100px] h-4' />
-                    <Skeleton className='w-[150px] h-8' />
+                    <Skeleton className='w-full h-10 mt-2' />
                 </div> :
-                    <div className='px-2 space-y-1'>
-                        <h1 className='font-semibold line-clamp-2 h-12'>{productName}</h1>
-                        <h2 className='font-bold'>₹{productPrice}</h2>
-                        <Button onClick={() => addToCart(product.id)} className='bg-pink-600 mb-3 w-full'><ShoppingCart/>Add to Cart</Button>
+                    <div className='p-3 flex flex-col flex-1 justify-between'>
+                        <div>
+                            <h1 className='font-semibold line-clamp-2 h-11 text-gray-800 group-hover:text-pink-600 transition-colors'>{productName}</h1>
+                            <h2 className='font-bold text-lg mt-1 mb-3'>₹{productPrice?.toLocaleString('en-IN')}</h2>
+                        </div>
+                        <Button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                addToCart(product.id);
+                            }} 
+                            className='bg-pink-600 hover:bg-pink-700 w-full shadow-sm'
+                        >
+                            <ShoppingCart className="w-4 h-4 mr-2"/>Add to Cart
+                        </Button>
                     </div>
             }
 

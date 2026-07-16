@@ -1,4 +1,4 @@
-import { ShoppingCart, Menu, X } from 'lucide-react'
+import { ShoppingCart, Menu, X, Home, ShoppingBag, User } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { Button } from './ui/button'
 import { Link, useNavigate } from 'react-router-dom'
@@ -32,9 +32,12 @@ const Navbar = () => {
         } catch (error) {
             console.log(error);
         } finally {
-            dispatch(setUser(null))
-            localStorage.removeItem('accessToken')
-            navigate('/login')
+            navigate('/')
+            setTimeout(() => {
+                dispatch(setUser(null))
+                dispatch(setCart([]))
+                localStorage.removeItem('accessToken')
+            }, 100)
         }
     }
 
@@ -88,27 +91,29 @@ const Navbar = () => {
                     }
                 </nav>
 
-                {/* Mobile Hamburger & Cart */}
-                <div className='md:hidden flex items-center gap-6'>
-                    <Link to={'/cart'} className='relative'>
-                        <ShoppingCart />
-                        <span className='bg-pink-500 rounded-full absolute text-white -top-3 -right-3 px-2 text-xs'>{cart?.items?.length || 0}</span>
+                {/* Mobile Icons & Hamburger */}
+                <div className='md:hidden flex items-center gap-4 sm:gap-5'>
+                    <Link to={'/'} className='text-gray-700 hover:text-pink-600 transition-colors'><Home size={22} /></Link>
+                    <Link to={'/products'} className='text-gray-700 hover:text-pink-600 transition-colors'><ShoppingBag size={22} /></Link>
+                    {user ? (
+                        <Link to={`/profile/${user.id}`} className='text-gray-700 hover:text-pink-600 transition-colors'><User size={22} /></Link>
+                    ) : (
+                        <Link to={'/login'} className='text-gray-700 hover:text-pink-600 transition-colors'><User size={22} /></Link>
+                    )}
+                    <Link to={'/cart'} className='relative text-gray-700 hover:text-pink-600 transition-colors'>
+                        <ShoppingCart size={22} />
+                        <span className='bg-pink-500 rounded-full absolute text-white -top-2 -right-3 px-1.5 text-[10px]'>{cart?.items?.length || 0}</span>
                     </Link>
-                    <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gray-800">
-                        {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                    <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gray-800 ml-1">
+                        {isMobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
                     </button>
                 </div>
             </div>
 
             {/* Mobile Menu Dropdown */}
             {isMobileMenuOpen && (
-                <div className='md:hidden bg-pink-50 border-b border-pink-200 px-4 pt-2 pb-6 space-y-3 shadow-lg'>
+                <div className='md:hidden bg-pink-50 border-b border-pink-200 px-4 pt-4 pb-6 space-y-3 shadow-lg'>
                     <ul className='flex flex-col gap-4 text-lg font-semibold'>
-                        <Link to={'/'} onClick={() => setIsMobileMenuOpen(false)}><li>Home</li></Link>
-                        <Link to={'/products'} onClick={() => setIsMobileMenuOpen(false)}><li>Products</li></Link>
-                        {
-                            user && <Link to={`/profile/${user.id}`} onClick={() => setIsMobileMenuOpen(false)}><li>Hello, {user.name || user.firstName}</li></Link>
-                        }
                         {
                             admin && <Link to={'/dashboard/sales'} onClick={() => setIsMobileMenuOpen(false)}><li>Dashboard</li></Link>
                         }

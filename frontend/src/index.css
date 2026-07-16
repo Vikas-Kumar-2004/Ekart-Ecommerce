@@ -41,6 +41,25 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Sonner Toast Responsive Fix */
+@media (max-width: 640px) {
+  [data-sonner-toast] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  [data-sonner-toast] [data-content] {
+    width: 100% !important;
+    margin-bottom: 8px !important;
+  }
+  [data-sonner-toast] [data-action] {
+    width: 100% !important;
+    justify-content: center !important;
+    margin-left: 0 !important;
+    margin-top: 8px !important;
+  }
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

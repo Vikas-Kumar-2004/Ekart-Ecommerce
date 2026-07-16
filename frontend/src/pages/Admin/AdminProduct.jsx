@@ -29,37 +29,71 @@ const AdminProduct = () => {
   const { products } = useSelector(store => store.product)
   const [sortOrder, setSortOrder] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
+  
+  // Pagination & Filter States
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [category, setCategory] = useState("All")
+  const [brand, setBrand] = useState("All")
+  const [categories, setCategories] = useState(["All"])
+  const [brands, setBrands] = useState(["All"])
+  const productsPerPage = 10;
+
   const [editProduct, setEditProduct] = useState(null)
   const [open, setOpen] = useState(false)
   const accessToken = localStorage.getItem("accessToken")
   const dispatch = useDispatch()
 
+  // Fetch Filters
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchFilters = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_URL}/api/v1/product/getallproducts`);
-        if (res.data.success) {
-          dispatch(setProducts(res.data.products));
-        }
+        const catRes = await axios.get(`${import.meta.env.VITE_URL}/api/v1/product/categories`);
+        if (catRes.data.success) setCategories(["All", ...catRes.data.categories]);
+        
+        const brandRes = await axios.get(`${import.meta.env.VITE_URL}/api/v1/product/brands`);
+        if (brandRes.data.success) setBrands(["All", ...brandRes.data.brands]);
       } catch (error) {
         console.log(error);
       }
     };
-    fetchProducts();
-  }, [dispatch]);
+    fetchFilters();
+  }, []);
 
-  let filteredProducts = products.filter((product) =>
-    product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const fetchProducts = async (page = 1) => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: productsPerPage.toString(),
+        search: searchTerm.trim(),
+        category: category,
+        brand: brand,
+        sortOrder: sortOrder,
+      });
+      const res = await axios.get(`${import.meta.env.VITE_URL}/api/v1/product/getallproducts?${params.toString()}`);
+      if (res.data.success) {
+        dispatch(setProducts(res.data.products));
+        if (res.data.pagination) setTotalPages(res.data.pagination.totalPages || 1);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  if (sortOrder === "lowToHigh") {
-    filteredProducts = [...filteredProducts].sort((a, b) => a.productPrice - b.productPrice)
-  }
-  if (sortOrder === "highToLow") {
-    filteredProducts = [...filteredProducts].sort((a, b) => b.productPrice - a.productPrice)
-  }
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, category, brand, sortOrder]);
+
+  const isMounted = React.useRef(false);
+
+  useEffect(() => {
+    fetchProducts(currentPage);
+    if (isMounted.current) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      isMounted.current = true;
+    }
+  }, [currentPage, searchTerm, category, brand, sortOrder, dispatch]);
 
   // Handle input changes
   const handleChange = (e) => {
@@ -139,30 +173,57 @@ const AdminProduct = () => {
 
   return (
     <div className='w-full md:pl-[350px] px-4 md:pr-10 py-20 flex flex-col gap-5 min-h-screen bg-gray-100'>
-      <div className='flex flex-col md:flex-row justify-between gap-4'>
+      <div className='flex flex-col md:flex-row justify-between gap-4 flex-wrap'>
         <div className='relative bg-white rounded-lg flex-1 md:flex-none'>
           <Input type="text"
             placeholder="Search Product..."
             className="w-full md:w-[400px] items-center pr-10"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)} />
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              if (e.target.value.trim() !== '') {
+                setCategory("All");
+                setBrand("All");
+              }
+            }} />
           <Search className='absolute right-3 top-2 text-gray-500' size={20} />
         </div>
 
-        <Select onValueChange={(value) => setSortOrder(value)}>
-          <SelectTrigger className="w-full md:w-[200px] bg-white">
-            <SelectValue placeholder="Sort by price" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="lowToHigh">Price: Low to High</SelectItem>
-            <SelectItem value="highToLow">Price: High to Low</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className='flex flex-col sm:flex-row gap-4'>
+          <Select onValueChange={(value) => { setCategory(value); setSearchTerm(""); }} value={category}>
+            <SelectTrigger className="w-full sm:w-[160px] bg-white">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((c, i) => <SelectItem key={i} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+
+          <Select onValueChange={(value) => { setBrand(value); setSearchTerm(""); }} value={brand}>
+            <SelectTrigger className="w-full sm:w-[160px] bg-white">
+              <SelectValue placeholder="Brand" />
+            </SelectTrigger>
+            <SelectContent>
+              {brands.map((b, i) => <SelectItem key={i} value={b}>{b}</SelectItem>)}
+            </SelectContent>
+          </Select>
+
+          <Select onValueChange={(value) => setSortOrder(value)}>
+            <SelectTrigger className="w-full sm:w-[200px] bg-white">
+              <SelectValue placeholder="Sort by price" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="lowToHigh">Price: Low to High</SelectItem>
+              <SelectItem value="highToLow">Price: High to Low</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
       <div className="flex flex-col gap-4">
       {
-        filteredProducts.map((product, index) => {
+        products.length === 0 ? <p className="text-gray-500">No products found.</p> :
+        products.map((product, index) => {
           return <Card key={index} className='p-4 md:px-6'>
             <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
               <div className='flex gap-4 items-center flex-1'>
@@ -279,6 +340,29 @@ const AdminProduct = () => {
           </Card>
         })
       }
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center items-center gap-3 mt-8">
+        <Button
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-4 py-2 rounded-lg"
+          variant="outline"
+        >
+          Prev
+        </Button>
+        <span className="font-medium text-gray-700">
+          Page {currentPage} of {totalPages}
+        </span>
+        <Button
+          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 rounded-lg"
+          variant="outline"
+        >
+          Next
+        </Button>
       </div>
     </div>
   )
