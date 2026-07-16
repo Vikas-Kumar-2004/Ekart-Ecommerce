@@ -125,11 +125,12 @@ const Product = () => {
         </div>
 
         {/* Main product section */}
-        <div className="flex flex-col flex-1 px-4 md:px-0 mt-10 md:mt-0 min-w-0">
+        {/* Main product section */}
+        <div className="flex flex-col flex-1 mt-10 md:mt-0 min-w-0">
           
-          {/* Sticky Controls Container */}
-          <div className="sticky top-[64px] z-10 bg-white pt-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-3">
+          {/* Fixed Controls Container */}
+          <div className="fixed top-[64px] left-0 right-0 z-30 bg-white pt-3 pb-3 px-4 border-b border-gray-100 shadow-sm md:static md:shadow-none md:border-none md:pt-0 md:pb-0 md:px-0 md:mb-6">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 mb-3 md:mb-4">
               
               {/* Search Box */}
               <div className="relative w-full sm:flex-1 md:max-w-md">
@@ -163,7 +164,7 @@ const Product = () => {
             </div>
 
             {/* Quick Categories for Mobile */}
-            <div className="flex md:hidden overflow-x-auto gap-2 mb-2 scrollbar-hide py-1">
+            <div className="max-w-7xl mx-auto flex md:hidden overflow-x-auto gap-2 scrollbar-hide py-1">
               {categories.slice(0, 4).map((cat, idx) => (
                 <button 
                   key={idx}
@@ -180,13 +181,10 @@ const Product = () => {
                 More <span className="text-lg leading-none">+</span>
               </button>
             </div>
-            
-            {/* Divider for sticky header */}
-            <div className="h-px bg-gray-200 w-full md:hidden"></div>
           </div>
 
           {/* Product Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-7">
+          <div className="pt-[140px] md:pt-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-7 px-4 md:px-0">
             {(loading && currentProducts.length === 0) ? (
               <p>Loading...</p>
             ) : currentProducts.length > 0 ? (

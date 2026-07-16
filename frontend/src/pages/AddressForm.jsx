@@ -44,7 +44,16 @@ const AddressForm = () => {
   };
 
   const handleSave = () => {
+    const { fullName, phone, email, address, city, state, zip, country } = formData;
+    if (!fullName.trim() || !phone.trim() || !email.trim() || !address.trim() || !city.trim() || !state.trim() || !zip.trim() || !country.trim()) {
+      toast.error("Please fill in all required fields correctly.");
+      return;
+    }
+
     dispatch(addAddress(formData));
+    // Automatically select the newly added address (which will be at the end of the array)
+    dispatch(setSelectedAddress(addresses.length));
+    
     setFormData({
       fullName: "",
       phone: "",
@@ -61,6 +70,7 @@ const AddressForm = () => {
   console.log('cart', cart);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     // Razorpay script removed as we are using Dummy Payment modal
   }, []);
 
