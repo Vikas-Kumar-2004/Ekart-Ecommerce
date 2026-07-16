@@ -56,7 +56,7 @@ const ProductDesc = ({ product }) => {
     <div className='flex flex-col gap-4'>
       <h1 className='font-bold text-2xl md:text-4xl text-gray-800'>{product.productName}</h1>
       <p className='text-gray-800'>{product.category} | {product.brand}</p>
-      <h2 className='text-pink-500 font-bold text-xl md:text-2xl'>₹{product.productPrice?.toLocaleString('en-IN')}</h2>
+      <h2 className='text-pink-500 font-bold text-lg sm:text-xl md:text-2xl break-words'>₹{product.productPrice?.toLocaleString('en-IN')}</h2>
       <p className='line-clamp-12 text-sm md:text-base text-muted-foreground'>{product.productDesc}</p>
       <div className='flex gap-2 items-center'>
         <p className='text-gray-800 font-semibold'>Quantity :</p>
