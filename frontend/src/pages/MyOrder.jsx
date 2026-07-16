@@ -109,7 +109,7 @@ const MyOrder = () => {
                 <path d="M16 10a4 4 0 0 1-8 0"/>
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">No orders found</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">No orders found</h2>
             <p className="text-gray-500 mb-6">Looks like you haven't placed any orders yet.</p>
             <Button onClick={() => navigate('/products')} className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-5 rounded-lg text-lg">Browse Products</Button>
           </div>
@@ -218,7 +218,7 @@ const MyOrder = () => {
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
             
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Complete Payment</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-4 text-gray-800">Complete Payment</h2>
             
             <form onSubmit={handleDummyPaymentSubmit} className="space-y-5">
               <div className="bg-pink-50/50 border border-pink-100 p-4 rounded-lg text-sm space-y-2 text-gray-700">

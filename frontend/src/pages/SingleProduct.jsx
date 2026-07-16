@@ -19,9 +19,9 @@ const SingleProduct = () => {
     const {products} = useSelector(store=>store.product)
     const product = products.find((item)=> item.id === productId)
   return (
-    <div className='pt-20 bg-white min-h-screen'>
+    <div className='bg-white min-h-screen'>
       {/* Full width sticky header */}
-      <div className='sticky top-[72px] z-40 bg-white border-b border-gray-200 shadow-sm'>
+      <div className='sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm pt-[76px]'>
         <div className='max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center gap-4'>
           <Button onClick={() => navigate(-1)}><ArrowLeft /></Button>
           <Breadcrums product={product}/>
