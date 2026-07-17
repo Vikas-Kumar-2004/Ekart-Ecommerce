@@ -1,10 +1,10 @@
 package user
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"time"
-	"bytes"
 
 	"go-ekart/internal/utils"
 
@@ -45,18 +45,13 @@ func (s *service) Register(ctx context.Context, req *RegisterRequest) (*UserResp
 	}
 
 	// 4. create user
-	role := req.Role
-	if role == "" {
-		role = "User"
-	}
-
 	newUser := &User{
 		ID:         uuid.New(),
 		FirstName:  req.FirstName,
 		LastName:   req.LastName,
 		Email:      req.Email,
 		Password:   string(hashedPassword),
-		Role:       role,
+		Role:       "user",
 		IsVerified: false,
 		IsLoggedIn: true,
 		CreatedAt:  time.Now(),
@@ -87,6 +82,43 @@ func (s *service) Register(ctx context.Context, req *RegisterRequest) (*UserResp
 
 	// 5. send OTP/verify email — yahan call karo apna email util
 	// utils.SendVerificationEmail(newUser.Email)
+
+	return toUserResponse(newUser), nil
+}
+
+func (s *service) CreateAdmin(ctx context.Context, req *RegisterRequest) (*UserResponse, error) {
+	if req.FirstName == "" || req.LastName == "" || req.Email == "" || req.Password == "" {
+		return nil, errors.New("all fields are required")
+	}
+
+	existing, _ := s.repo.GetByEmail(ctx, req.Email)
+	if existing != nil {
+		return nil, errors.New("user already exists")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), 10)
+	if err != nil {
+		return nil, err
+	}
+
+	newUser := &User{
+		ID:         uuid.New(),
+		FirstName:  req.FirstName,
+		LastName:   req.LastName,
+		Email:      req.Email,
+		Password:   string(hashedPassword),
+		Role:       "admin",
+		IsVerified: true,
+		IsLoggedIn: false, // Don't log them in automatically upon creation
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	// No token generation for CreateAdmin since they are not logging in immediately
+
+	if err := s.repo.Create(ctx, newUser); err != nil {
+		return nil, err
+	}
 
 	return toUserResponse(newUser), nil
 }
@@ -170,7 +202,7 @@ func (s *service) RefreshToken(ctx context.Context, req *RefreshTokenRequest) (*
 	if err != nil || u == nil {
 		return nil, errors.New("user not found")
 	}
-	
+
 	// verify claims match user
 	if u.Email != claims.Email {
 		return nil, errors.New("token claims mismatch")
@@ -309,11 +341,10 @@ func (s *service) UpdateUser(ctx context.Context, loggedInID uuid.UUID, loggedIn
 			Folder: "profiles",
 		})
 		if err == nil {
-			u.ProfilePic         = result.SecureURL
+			u.ProfilePic = result.SecureURL
 			u.ProfilePicPublicID = result.PublicID
 		}
 	}
-
 
 	if req.FirstName != "" {
 		u.FirstName = req.FirstName

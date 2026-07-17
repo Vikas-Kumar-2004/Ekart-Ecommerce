@@ -27,7 +27,6 @@ const Signup = () => {
         lastName: '',
         email: '',
         password: '',
-        role: 'user',
     })
 
     const handleChange = (e) => {
@@ -133,35 +132,6 @@ const Signup = () => {
                                 }
                             </div>
                         </div>
-                        
-                        <div className="grid gap-2 mt-1">
-                            <Label>Register as</Label>
-                            <div className="flex items-center gap-6 mt-1">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="role"
-                                        value="user"
-                                        checked={formData.role === 'user'}
-                                        onChange={handleChange}
-                                        className="accent-pink-600 w-4 h-4"
-                                    />
-                                    <span className="text-sm text-gray-700 font-medium">User</span>
-                                </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="role"
-                                        value="admin"
-                                        checked={formData.role === 'admin'}
-                                        onChange={handleChange}
-                                        className="accent-pink-600 w-4 h-4"
-                                    />
-                                    <span className="text-sm text-gray-700 font-medium">Admin</span>
-                                </label>
-                            </div>
-                        </div>
-
                     </div>
                 </CardContent>
                 <CardFooter className="flex-col gap-2">

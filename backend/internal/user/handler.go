@@ -52,6 +52,40 @@ func (h *Handler) Register(c *gin.Context) {
 	})
 }
 
+// @Summary      Create Admin
+// @Description  Sirf Admin ek naya admin create kar sakta hai
+// @Tags         User
+// @Accept       json
+// @Produce      json
+// @Param        request body RegisterRequest true "Admin payload"
+// @Success      201  {object}  map[string]any
+// @Failure      400  {object}  map[string]any
+// @Router       /users/create-admin [post]
+func (h *Handler) CreateAdmin(c *gin.Context) {
+	var req RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "invalid request body",
+		})
+		return
+	}
+
+	user, err := h.svc.CreateAdmin(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"success": true,
+		"message": "Admin created successfully",
+		"user":    user,
+	})
+}
+
 // ─── Login ────────────────────────────────────────────────────────────────────
 
 // @Summary      Login user

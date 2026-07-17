@@ -7,7 +7,7 @@ import (
 )
 
 // RegisterRoutes — main.go ya central routes se call karo
-func RegisterRoutes(r *gin.RouterGroup, h *Handler, authMiddleware gin.HandlerFunc) {
+func RegisterRoutes(r *gin.RouterGroup, h *Handler, authMiddleware, adminMiddleware gin.HandlerFunc) {
 	userGroup := r.Group("/user")
 	{
 		// Public
@@ -31,7 +31,8 @@ func RegisterRoutes(r *gin.RouterGroup, h *Handler, authMiddleware gin.HandlerFu
 		}
 
 		// Admin protected
-		userGroup.GET("/all-user", authMiddleware, middleware.IsAdmin, h.GetAllUsers)
+		userGroup.GET("/all-user", authMiddleware, adminMiddleware, h.GetAllUsers)
+		userGroup.POST("/create-admin", authMiddleware, adminMiddleware, h.CreateAdmin)
 
 	}
 }

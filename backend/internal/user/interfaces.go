@@ -26,6 +26,7 @@ type Repository interface {
 
 type Service interface {
 	Register(ctx context.Context, req *RegisterRequest) (*UserResponse, error)
+	CreateAdmin(ctx context.Context, req *RegisterRequest) (*UserResponse, error)
 	Login(ctx context.Context, req *LoginRequest) (*LoginResponse, error)
 	Logout(ctx context.Context, userID uuid.UUID) error
 	GetProfile(ctx context.Context, id uuid.UUID) (*UserResponse, error)

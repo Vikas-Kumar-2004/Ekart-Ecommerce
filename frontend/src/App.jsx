@@ -23,6 +23,7 @@ import ShowUserOrders from './pages/Admin/ShowUserOrders'
 import Profile from './pages/profile'
 import UserInfo from './pages/Admin/UserInfo'
 import AdminSales from './pages/Admin/AdminSales'
+import CreateAdmin from './pages/Admin/CreateAdmin'
 import Footer from './components/Footer'
 import MyOrder from './pages/MyOrder'
 import ForgotPassword from './pages/ForgotPassword'
@@ -119,6 +120,10 @@ const router = createBrowserRouter([
       {
         path: "users/:id",
         element: <><UserInfo /></>
+      },
+      {
+        path: "create-admin",
+        element: <><CreateAdmin /></>
       },   
     ]
   },
