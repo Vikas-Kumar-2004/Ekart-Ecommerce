@@ -22,7 +22,7 @@ const ProductDesc = ({ product }) => {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       if (res.data.success) {
-        const phoneNumber = "918178960547";
+        const phoneNumber = import.meta.env.VITE_PHONE_NUMBER;
         const productUrl = window.location.href;
         const message = `Hi! I just added *${product.productName}* to my cart. Price: ₹${product.productPrice}. Here is the link: ${productUrl}. I need some help before ordering.`;
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -44,7 +44,7 @@ const ProductDesc = ({ product }) => {
   };
 
   const handleWhatsAppClick = () => {
-    const phoneNumber = "918178960547";
+    const phoneNumber = import.meta.env.VITE_PHONE_NUMBER;
     const currentUrl = window.location.href;
     const message = `Hi! I'm interested in *${product.productName}*. Price is ₹${product.productPrice}. Here is the link: ${currentUrl}. Can you share more details?`;
     

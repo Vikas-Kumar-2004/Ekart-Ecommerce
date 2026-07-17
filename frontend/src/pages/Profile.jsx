@@ -222,7 +222,7 @@ const Profile = () => {
                     </div>
                 </TabsContent>
                 <TabsContent value="orders">
-                    <MyOrder/>
+                    <MyOrder hideBackButton={true} />
                 </TabsContent>
             </Tabs>
         </div>

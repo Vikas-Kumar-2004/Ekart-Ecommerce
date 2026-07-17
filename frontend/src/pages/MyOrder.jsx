@@ -8,7 +8,7 @@ import OrderTracker from '../components/OrderTracker'
 
 import { toast } from 'sonner'
 
-const MyOrder = () => {
+const MyOrder = ({ hideBackButton = false }) => {
   const navigate = useNavigate()
   const [userOrder, setUserOrder] = useState([])
   const [loading, setLoading] = useState(true)
@@ -94,7 +94,9 @@ const MyOrder = () => {
     <div className='md:pr-20 flex flex-col gap-3 pt-24'>
       <div className="w-full p-4 md:p-6">
         <div className='flex items-center gap-4 mb-6'>
-          <Button onClick={() => navigate(-1)}><ArrowLeft /></Button>
+          {!hideBackButton && (
+            <Button onClick={() => navigate(-1)}><ArrowLeft /></Button>
+          )}
           <h1 className="text-xl md:text-2xl font-bold">Orders</h1>
         </div>
 

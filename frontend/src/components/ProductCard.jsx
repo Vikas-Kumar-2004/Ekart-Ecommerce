@@ -22,7 +22,7 @@ const ProductCard = ({ product, loading }) => {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             if(res.data.success){
-                const phoneNumber = "918178960547";
+                const phoneNumber = import.meta.env.PHONE_NUMBER;
                 const productUrl = window.location.origin + `/products/${product.id}`;
                 const message = `Hi! I just added *${productName}* to my cart. Price: ₹${productPrice}. Here is the link: ${productUrl}. I need some help before ordering.`;
                 const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
