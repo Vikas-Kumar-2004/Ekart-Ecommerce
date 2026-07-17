@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react'
 import axios from 'axios'
 import { toast } from 'sonner'
 
@@ -54,7 +54,7 @@ const CreateAdmin = () => {
                     email: '',
                     password: '',
                 })
-                navigate('/dashboard')
+                navigate('/dashboard/admins')
             }
         } catch (error) {
             console.log(error);
@@ -65,8 +65,15 @@ const CreateAdmin = () => {
     }
 
     return (
-        <div className="flex justify-center items-center min-h-[80vh] w-full bg-white p-4 md:p-8">
-            <Card className="w-full max-w-md shadow-sm border-gray-200">
+        <div className="flex justify-center items-center min-h-[80vh] w-full bg-white p-4 md:p-8 relative">
+            
+            <div className="absolute top-4 left-4 md:top-8 md:left-8">
+                <Button variant="ghost" onClick={() => navigate('/dashboard/admins')} className="text-gray-600 hover:text-pink-600">
+                    <ArrowLeft className="w-4 h-4 mr-2" /> Back to Admins
+                </Button>
+            </div>
+
+            <Card className="w-full max-w-md shadow-sm border-gray-200 mt-10 md:mt-0">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold">Create New Admin</CardTitle>
                     <CardDescription>

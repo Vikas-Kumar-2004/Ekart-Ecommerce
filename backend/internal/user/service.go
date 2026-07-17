@@ -415,6 +415,39 @@ func (s *service) GetAllUsers(ctx context.Context) ([]*UserResponse, error) {
 	return response, nil
 }
 
+func (s *service) GetAllAdmins(ctx context.Context, searchQuery string) ([]*UserResponse, error) {
+	admins, err := s.repo.GetAllAdmins(ctx, searchQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	var response []*UserResponse
+	for _, u := range admins {
+		response = append(response, toUserResponse(u))
+	}
+	return response, nil
+}
+
+func (s *service) DeleteAdmin(ctx context.Context, adminID uuid.UUID, targetID uuid.UUID) error {
+	// 1. Prevent self-deletion
+	if adminID == targetID {
+		return errors.New("cannot delete yourself")
+	}
+
+	// 2. Ensure target is actually an admin
+	targetUser, err := s.repo.GetByID(ctx, targetID)
+	if err != nil || targetUser == nil {
+		return errors.New("admin not found")
+	}
+
+	if targetUser.Role != "admin" {
+		return errors.New("target is not an admin")
+	}
+
+	// 3. Delete the admin
+	return s.repo.Delete(ctx, targetID)
+}
+
 func (s *service) GetUserByID(ctx context.Context, id uuid.UUID) (*UserResponse, error) {
 	u, err := s.repo.GetByID(ctx, id)
 	if err != nil || u == nil {

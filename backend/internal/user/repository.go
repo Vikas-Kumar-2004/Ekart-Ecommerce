@@ -171,6 +171,49 @@ func (r *repository) GetAll(ctx context.Context) ([]*User, error) {
     return users, nil
 }
 
+func (r *repository) GetAllAdmins(ctx context.Context, searchQuery string) ([]*User, error) {
+    var query string
+    var args []interface{}
+
+    if searchQuery != "" {
+        query = `SELECT id, first_name, last_name, profile_pic, profile_pic_public_id, email, password, role, token, refresh_token, is_verified, is_logged_in, otp, otp_expiry, address, city, zip_code, phone_no, created_at, updated_at FROM users WHERE role = 'admin' AND (first_name ILIKE $1 OR last_name ILIKE $1 OR email ILIKE $1)`
+        searchTerm := "%" + searchQuery + "%"
+        args = append(args, searchTerm)
+    } else {
+        query = `SELECT id, first_name, last_name, profile_pic, profile_pic_public_id, email, password, role, token, refresh_token, is_verified, is_logged_in, otp, otp_expiry, address, city, zip_code, phone_no, created_at, updated_at FROM users WHERE role = 'admin'`
+    }
+
+    rows, err := r.db.Query(ctx, query, args...)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var users []*User
+    for rows.Next() {
+        u := &User{}
+        var profilePic, profilePicPublicID *string
+        if err := rows.Scan(
+            &u.ID, &u.FirstName, &u.LastName, &profilePic, &profilePicPublicID,
+            &u.Email, &u.Password, &u.Role, &u.Token, &u.RefreshToken, &u.IsVerified, &u.IsLoggedIn,
+            &u.OTP, &u.OTPExpiry, &u.Address, &u.City, &u.ZipCode, &u.PhoneNo,
+            &u.CreatedAt, &u.UpdatedAt,
+        ); err != nil {
+            return nil, err
+        }
+        
+        if profilePic != nil {
+            u.ProfilePic = *profilePic
+        }
+        if profilePicPublicID != nil {
+            u.ProfilePicPublicID = *profilePicPublicID
+        }
+
+        users = append(users, u)
+    }
+    return users, nil
+}
+
 func (r *repository) DeleteSession(ctx context.Context, userID uuid.UUID) error {
 	query := `DELETE FROM sessions WHERE user_id = $1`
 	_, err := r.db.Exec(ctx, query, userID)

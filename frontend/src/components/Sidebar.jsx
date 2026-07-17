@@ -1,4 +1,4 @@
-import { ChartColumnBig, FolderPlus, LayoutDashboard, PackagePlus, PackageSearch, SquareUser, Users, UserPlus } from 'lucide-react'
+import { ChartColumnBig, FolderPlus, LayoutDashboard, PackagePlus, PackageSearch, SquareUser, Users, UserPlus, ShieldCheck } from 'lucide-react'
 import { LiaCommentSolid } from "react-icons/lia";
 import React from 'react'
 import { NavLink } from 'react-router-dom'
@@ -35,9 +35,9 @@ const Sidebar = () => {
             <FaRegEdit/>
             <span>Orders</span>
           </NavLink>
-          <NavLink to='/dashboard/create-admin' className={({ isActive }) => `text-xl  ${isActive ? "bg-pink-600 dark:bg-gray-900 text-gray-200" : "bg-transparent"} flex items-center gap-2 font-bold cursor-pointer p-3 rounded-2xl w-full`}>
-            <UserPlus/>
-            <span>Create Admin</span>
+          <NavLink to='/dashboard/admins' className={({ isActive }) => `text-xl  ${isActive ? "bg-pink-600 dark:bg-gray-900 text-gray-200" : "bg-transparent"} flex items-center gap-2 font-bold cursor-pointer p-3 rounded-2xl w-full`}>
+            <ShieldCheck/>
+            <span>Admins</span>
           </NavLink>
         </div>
       </div>

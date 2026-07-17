@@ -33,6 +33,8 @@ func RegisterRoutes(r *gin.RouterGroup, h *Handler, authMiddleware, adminMiddlew
 		// Admin protected
 		userGroup.GET("/all-user", authMiddleware, adminMiddleware, h.GetAllUsers)
 		userGroup.POST("/create-admin", authMiddleware, adminMiddleware, h.CreateAdmin)
+		userGroup.GET("/admins", authMiddleware, adminMiddleware, h.GetAllAdmins)
+		userGroup.DELETE("/admins/:id", authMiddleware, adminMiddleware, h.DeleteAdmin)
 
 	}
 }

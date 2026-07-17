@@ -445,6 +445,59 @@ func (h *Handler) GetAllUsers(c *gin.Context) {
 	})
 }
 
+// ─── GetAllAdmins ─────────────────────────────────────────────────────────────
+func (h *Handler) GetAllAdmins(c *gin.Context) {
+	searchQuery := c.Query("search")
+	admins, err := h.svc.GetAllAdmins(c.Request.Context(), searchQuery)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"admins":  admins,
+	})
+}
+
+// ─── DeleteAdmin ──────────────────────────────────────────────────────────────
+func (h *Handler) DeleteAdmin(c *gin.Context) {
+	targetIDParam := c.Param("id")
+	targetID, err := uuid.Parse(targetIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "invalid admin id"})
+		return
+	}
+
+	adminIDStr := c.GetString("uid")
+	if adminIDStr == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "unauthorized"})
+		return
+	}
+	
+	adminID, err := uuid.Parse(adminIDStr)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "invalid user claim format"})
+		return
+	}
+
+	if err := h.svc.DeleteAdmin(c.Request.Context(), adminID, targetID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Admin deleted successfully",
+	})
+}
+
 // @Summary      Get user by ID
 // @Tags         User
 // @Security     BearerAuth
