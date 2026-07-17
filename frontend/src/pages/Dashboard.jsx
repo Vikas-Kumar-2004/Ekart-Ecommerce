@@ -1,7 +1,7 @@
 import Sidebar from '@/components/Sidebar'
 import React from 'react'
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, PackagePlus, PackageSearch, Users } from 'lucide-react'
+import { LayoutDashboard, PackagePlus, PackageSearch, Users, UserPlus, ShieldCheck } from 'lucide-react'
 import { FaRegEdit } from 'react-icons/fa'
 
 const Dashboard = () => {
@@ -24,6 +24,9 @@ const Dashboard = () => {
         </NavLink>
         <NavLink to='/dashboard/orders' className={({ isActive }) => `flex-shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${isActive ? 'bg-pink-600 text-white border-pink-600' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'}`}>
           <FaRegEdit size={16} /> Orders
+        </NavLink>
+        <NavLink to='/dashboard/admins' className={({ isActive }) => `flex-shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${isActive ? 'bg-pink-600 text-white border-pink-600' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'}`}>
+          <ShieldCheck size={16} /> Admins
         </NavLink>
       </div>
 

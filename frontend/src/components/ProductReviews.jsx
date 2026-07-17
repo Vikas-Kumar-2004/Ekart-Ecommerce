@@ -132,19 +132,18 @@ const ProductReviews = ({ productId }) => {
 
   return (
     <div className="mt-12 w-full">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Customer Reviews</h2>
+      <h2 className="text-xl md:text-2xl font-bold mb-6 text-gray-800">Customer Reviews</h2>
       
-      {/* Add Review Form */}
       {user && (
-        <div className="bg-gray-50 p-6 rounded-lg mb-8 shadow-sm">
+        <div className="bg-gray-50 p-4 sm:p-6 rounded-lg mb-8 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Write a Review</h3>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-sm text-gray-600">Rating:</span>
-            <div className="flex gap-1">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className="text-sm text-gray-600 shrink-0">Rating:</span>
+            <div className="flex flex-wrap gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className={`w-6 h-6 cursor-pointer ${rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                  className={`w-6 h-6 sm:w-7 sm:h-7 cursor-pointer shrink-0 ${rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
                   onClick={() => setRating(star)}
                 />
               ))}
@@ -152,7 +151,7 @@ const ProductReviews = ({ productId }) => {
           </div>
           <Textarea
             placeholder="What did you like or dislike? What is this product used for?"
-            className="mb-4 bg-white"
+            className="mb-4 bg-white w-full"
             rows={4}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
@@ -160,7 +159,7 @@ const ProductReviews = ({ productId }) => {
           <Button 
             onClick={handleSubmit} 
             disabled={loading}
-            className="bg-pink-600 hover:bg-pink-700 text-white"
+            className="bg-pink-600 hover:bg-pink-700 text-white w-full sm:w-auto"
           >
             {loading ? 'Submitting...' : 'Submit Review'}
           </Button>
@@ -230,23 +229,23 @@ const ProductReviews = ({ productId }) => {
 
               {editingId === review.id ? (
                 <div className="mt-4 bg-gray-50 p-4 rounded border">
-                  <div className="flex gap-1 mb-2">
+                  <div className="flex flex-wrap gap-1 mb-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
                         key={star}
-                        className={`w-5 h-5 cursor-pointer ${editRating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                        className={`w-5 h-5 sm:w-6 sm:h-6 cursor-pointer shrink-0 ${editRating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
                         onClick={() => setEditRating(star)}
                       />
                     ))}
                   </div>
                   <Textarea
-                    className="mb-3 bg-white"
+                    className="mb-3 bg-white w-full"
                     value={editComment}
                     onChange={(e) => setEditComment(e.target.value)}
                   />
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => handleUpdate(review.id)} className="bg-green-600 hover:bg-green-700 text-white">Save</Button>
-                    <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" onClick={() => handleUpdate(review.id)} className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none">Save</Button>
+                    <Button size="sm" variant="outline" onClick={() => setEditingId(null)} className="flex-1 sm:flex-none">Cancel</Button>
                   </div>
                 </div>
               ) : (

@@ -92,7 +92,7 @@ const Profile = () => {
 
 
     return (
-        <div className='pt-20 min-h-screen bg-gray-100 p-4 md:p-8'>
+        <div className='min-h-screen bg-gray-100 px-4 pb-4 pt-24 md:px-8 md:pb-8 md:pt-32'>
             <div className="max-w-7xl mx-auto mb-6">
                 <Button onClick={() => navigate(-1)}><ArrowLeft /></Button>
             </div>
@@ -104,7 +104,7 @@ const Profile = () => {
                 <TabsContent value="profile">
                     <div className=''>
                         <div className="flex flex-col justify-center items-center bg-gray-100 ">
-                            <h1 className='font-bold mb-7 text-2xl text-gray-800'>Update Profile</h1>
+                            <h1 className='font-bold mb-7 text-xl md:text-2xl text-gray-800'>Update Profile</h1>
                             <div className="w-full flex flex-col md:flex-row gap-10 justify-between items-center md:items-start px-4 md:px-7 max-w-2xl ">
                                 {/* Profile Picture */}
                                 <div className="flex flex-col items-center mb-4 md:mb-0">
@@ -222,7 +222,7 @@ const Profile = () => {
                     </div>
                 </TabsContent>
                 <TabsContent value="orders">
-                    <MyOrder/>
+                    <MyOrder hideBackButton={true} />
                 </TabsContent>
             </Tabs>
         </div>

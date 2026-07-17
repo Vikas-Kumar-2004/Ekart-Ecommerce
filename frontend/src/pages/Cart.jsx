@@ -69,6 +69,7 @@ const Cart = () => {
 
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     loadCart();
   }, [dispatch]);
 
@@ -76,15 +77,15 @@ const Cart = () => {
   console.log(cart);
 
   return (
-    <div className='pt-20 bg-gray-50 min-h-screen'>
+    <div className='bg-gray-50 min-h-screen'>
       {
         cart?.items?.length > 0 ? (
           <div>
             {/* Full width sticky header */}
-            <div className="sticky top-[72px] z-40 bg-gray-50 border-b border-gray-200 shadow-sm">
+            <div className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 shadow-sm pt-[76px]">
               <div className='max-w-7xl mx-auto px-4 md:px-8 py-3 flex items-center gap-4'>
                 <Button onClick={() => navigate(-1)}><ArrowLeft /></Button>
-                <h1 className='text-2xl font-bold text-gray-800'>Shopping Cart</h1>
+                <h1 className='text-xl md:text-2xl font-bold text-gray-800'>Shopping Cart</h1>
               </div>
             </div>
 
@@ -103,27 +104,27 @@ const Cart = () => {
                         <div className='flex justify-between items-start gap-4'>
                           <div>
                             <h1 className='font-bold text-lg text-gray-800 line-clamp-2 leading-tight'>{product?.productId?.productName}</h1>
-                            <p className='text-sm text-gray-500 mt-1 capitalize'>{product?.productId?.category} • {product?.productId?.brand}</p>
-                            <h2 className='text-pink-600 font-bold text-xl mt-2'>₹{product?.productId?.productPrice?.toLocaleString('en-IN')}</h2>
+                            <p className='text-sm text-gray-500 mt-1 capitalize'>{[product?.productId?.category, product?.productId?.brand].filter(Boolean).join(' • ')}</p>
+                            <h2 className='text-pink-600 font-bold text-lg sm:text-xl mt-2'>₹{product?.productId?.productPrice?.toLocaleString('en-IN')}</h2>
                           </div>
                           <button onClick={() => handleRemove(product?.productId?.id)} className='text-gray-400 hover:text-red-500 hover:bg-red-50 p-2.5 rounded-full transition-colors shrink-0' title="Remove">
                             <Trash2 className='w-5 h-5' />
                           </button>
                         </div>
 
-                        {/* Bottom row: Quantity and Total */}
-                        <div className='flex justify-between items-end mt-auto pt-4 border-t border-gray-100'>
-                          <div>
-                            <p className="text-xs text-gray-500 mb-1 ml-1">Quantity</p>
-                            <div className='flex items-center bg-gray-50 rounded-full border border-gray-200'>
+                        {/* Bottom rows: Quantity and Total */}
+                        <div className='flex flex-col gap-3 mt-auto pt-4 border-t border-gray-100'>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500 font-medium">Quantity</span>
+                            <div className='flex items-center bg-gray-50 rounded-full border border-gray-200 shrink-0'>
                               <button onClick={() => handleUpdateQuantity(product.productId.id, 'decrease')} className='w-9 h-9 flex justify-center items-center rounded-l-full hover:bg-gray-200 text-gray-600 transition-colors font-medium'>-</button>
                               <span className='w-10 text-center font-semibold text-gray-800'>{product.quantity}</span>
                               <button onClick={() => handleUpdateQuantity(product.productId.id, 'increase')} className='w-9 h-9 flex justify-center items-center rounded-r-full hover:bg-gray-200 text-gray-600 transition-colors font-medium'>+</button>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-xs text-gray-500 mb-1">Total</p>
-                            <p className='font-bold text-xl text-gray-900'>₹{((product?.productId?.productPrice) * (product?.quantity)).toLocaleString('en-IN')}</p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-bold text-gray-800">Total</span>
+                            <span className='font-bold text-lg sm:text-xl text-gray-900'>₹{((product?.productId?.productPrice) * (product?.quantity)).toLocaleString('en-IN')}</span>
                           </div>
                         </div>
                       </div>
@@ -137,22 +138,22 @@ const Cart = () => {
                     <CardTitle className="text-xl font-bold text-gray-800">Order Summary</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-5 pt-5">
-                    <div className="flex justify-between text-gray-600">
+                    <div className="flex justify-between gap-2 text-gray-600">
                       <span>Subtotal ({cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0} items)</span>
-                      <span className="font-medium text-gray-900">₹{cart?.totalPrice?.toLocaleString('en-IN')}</span>
+                      <span className="font-medium text-gray-900 text-right">₹{cart?.totalPrice?.toLocaleString('en-IN')}</span>
                     </div>
-                    <div className="flex justify-between text-gray-600">
+                    <div className="flex justify-between gap-2 text-gray-600">
                       <span>Shipping</span>
-                      <span className="font-medium text-gray-900">{shipping === 0 ? <span className="text-green-600">Free</span> : `₹${shipping.toLocaleString('en-IN')}`}</span>
+                      <span className="font-medium text-gray-900 text-right">{shipping === 0 ? <span className="text-green-600">Free</span> : `₹${shipping.toLocaleString('en-IN')}`}</span>
                     </div>
-                    <div className="flex justify-between text-gray-600">
+                    <div className="flex justify-between gap-2 text-gray-600">
                       <span>Tax (5%)</span>
-                      <span className="font-medium text-gray-900">₹{tax.toLocaleString('en-IN')}</span>
+                      <span className="font-medium text-gray-900 text-right">₹{tax.toLocaleString('en-IN')}</span>
                     </div>
                     <Separator className="bg-gray-200" />
-                    <div className="flex justify-between font-bold text-xl text-gray-900">
-                      <span>Total Amount</span>
-                      <span className="text-pink-600">₹{total.toLocaleString('en-IN')}</span>
+                    <div className="flex justify-between items-center gap-2 font-bold text-lg sm:text-xl text-gray-900">
+                      <span>Total</span>
+                      <span className="text-pink-600 text-right">₹{total.toLocaleString('en-IN')}</span>
                     </div>
 
                     <div className="space-y-3 pt-4">
@@ -184,14 +185,14 @@ const Cart = () => {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
+          <div className="flex flex-col items-center justify-center min-h-[60vh] pt-24 p-6 text-center">
             {/* Icon */}
             <div className="bg-pink-100 p-6 rounded-full">
               <ShoppingCart className="w-16 h-16 text-pink-600" />
             </div>
 
             {/* Title */}
-            <h2 className="mt-6 text-2xl font-bold text-gray-800">Your Cart is Empty</h2>
+            <h2 className="mt-6 text-xl md:text-2xl font-bold text-gray-800">Your Cart is Empty</h2>
 
             {/* Message */}
             <p className="mt-2 text-gray-600">

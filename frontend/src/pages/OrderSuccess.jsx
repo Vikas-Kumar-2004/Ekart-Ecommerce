@@ -14,7 +14,7 @@ const OrderSuccess = () => {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold mt-6 text-gray-800">
+        <h1 className="text-xl md:text-2xl font-bold mt-6 text-gray-800">
           Payment Successful 🎉
         </h1>
 

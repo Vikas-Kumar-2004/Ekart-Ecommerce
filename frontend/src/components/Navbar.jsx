@@ -61,7 +61,7 @@ const Navbar = () => {
     },[dispatch, accessToken])
     
     return (
-        <header className='bg-pink-50 fixed w-full z-20 border-b border-pink-200'>
+        <header className='bg-pink-50 fixed w-full z-50 border-b border-pink-200'>
             <div className='max-w-7xl mx-auto flex justify-between items-center py-3 px-4 md:px-8'>
                 {/* logo section */}
                 <div>

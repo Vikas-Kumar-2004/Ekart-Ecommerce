@@ -40,6 +40,7 @@ func New(db *pgxpool.Pool, h *Handlers) *gin.Engine {
 		apiV1,
 		h.User,
 		middleware.Authentication(),
+		middleware.IsAdmin,
 	)
 
 	product.RegisterRoutes(

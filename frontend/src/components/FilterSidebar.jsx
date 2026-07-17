@@ -64,7 +64,7 @@ const FilterSidebar = ({
       >
         {/* Mobile Header */}
         <div className='flex justify-between items-center md:hidden mb-6 mt-4'>
-          <span className="font-bold text-2xl text-pink-600">Filters</span>
+          <span className="font-bold text-xl md:text-2xl text-pink-600">Filters</span>
           <button onClick={onClose} className="p-2 text-gray-600 hover:text-gray-900 bg-gray-200 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
