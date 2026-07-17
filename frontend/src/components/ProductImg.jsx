@@ -8,8 +8,8 @@ const ProductImg = ({ images }) => {
         <div className='flex flex-col-reverse lg:flex-row gap-5 w-full'>
             <div className='gap-3 flex flex-row lg:flex-col overflow-x-auto pb-2 lg:pb-0'>
                 {
-                    images.map((img) => {
-                        return <img key={img.id} onClick={()=>setMainImg(img.url)} src={img.url} alt="" className='cursor-pointer w-16 h-16 md:w-20 md:h-20 object-cover border shadow-sm shrink-0' />
+                    images.map((img, index) => {
+                        return <img key={img.publicId || img.url || index} onClick={()=>setMainImg(img.url)} src={img.url} alt="" className='cursor-pointer w-16 h-16 md:w-20 md:h-20 object-cover border shadow-sm shrink-0' />
                     })
                 }
 

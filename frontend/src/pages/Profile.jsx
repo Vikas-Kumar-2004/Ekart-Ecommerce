@@ -92,7 +92,7 @@ const Profile = () => {
 
 
     return (
-        <div className='pt-20 min-h-screen bg-gray-100 p-4 md:p-8'>
+        <div className='min-h-screen bg-gray-100 px-4 pb-4 pt-24 md:px-8 md:pb-8 md:pt-32'>
             <div className="max-w-7xl mx-auto mb-6">
                 <Button onClick={() => navigate(-1)}><ArrowLeft /></Button>
             </div>

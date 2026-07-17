@@ -1,10 +1,13 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/button';
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ordersPerPage = 10;
     const accessToken = localStorage.getItem("accessToken");
 
     const fetchOrders = async () => {
@@ -44,6 +47,26 @@ const AdminOrders = () => {
         return <div className="text-center py-20 text-gray-500">Loading all orders...</div>;
     }
 
+    // Pagination Logic
+    const totalPages = Math.ceil(orders.length / ordersPerPage);
+    const indexOfLastOrder = currentPage * ordersPerPage;
+    const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+    const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+
+    const handlePrev = () => {
+        if (currentPage > 1) {
+            setCurrentPage((prev) => prev - 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const handleNext = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage((prev) => prev + 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     const statusColors = {
         Pending: "bg-yellow-100 text-yellow-700",
         Paid: "bg-blue-100 text-blue-700",
@@ -61,7 +84,7 @@ const AdminOrders = () => {
                 <p className="text-gray-500">No orders found.</p>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {orders.map((order) => (
+                    {currentOrders.map((order) => (
                         <div key={order?.id} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col">
                             {/* Header: Order ID & Status */}
                             <div className="flex justify-between items-start mb-4 gap-2">
@@ -111,6 +134,28 @@ const AdminOrders = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {totalPages > 1 && (
+                <div className="flex justify-between items-center mt-8 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
+                    <Button
+                        variant="outline"
+                        onClick={handlePrev}
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </Button>
+                    <span className="text-sm text-gray-600 font-medium">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        onClick={handleNext}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </Button>
                 </div>
             )}
         </div>
