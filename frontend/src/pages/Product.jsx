@@ -62,10 +62,13 @@ const Product = () => {
 
       const res = await axios.get(`${import.meta.env.VITE_URL}/api/v1/product/getallproducts?${params.toString()}`);
       if (res.data.success) {
-        setAllProducts(res.data.products);
-        dispatch(setProducts(res.data.products));
-        if (res.data.pagination) {
-          setTotalPages(res.data.pagination.totalPages);
+        // If products are found, or if search is cleared, update the state
+        if (res.data.products.length > 0 || search.trim() === '') {
+          setAllProducts(res.data.products);
+          dispatch(setProducts(res.data.products));
+          if (res.data.pagination) {
+            setTotalPages(res.data.pagination.totalPages);
+          }
         }
       }
     } catch (error) {

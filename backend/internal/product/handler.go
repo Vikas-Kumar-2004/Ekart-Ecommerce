@@ -108,8 +108,8 @@ func (h *Handler) GetAllProducts(c *gin.Context) {
 	}
 
 	if len(paginatedRes.Products) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success":  false,
+		c.JSON(http.StatusOK, gin.H{
+			"success":  true,
 			"message":  "No Product available",
 			"products": []any{},
 			"pagination": gin.H{
