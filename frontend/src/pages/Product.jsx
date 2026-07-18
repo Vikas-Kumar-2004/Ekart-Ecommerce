@@ -37,8 +37,8 @@ const Product = () => {
           fetch(`${import.meta.env.VITE_URL}/api/v1/product/categories`).then(r => r.json()),
           fetch(`${import.meta.env.VITE_URL}/api/v1/product/brands`).then(r => r.json())
         ]);
-        if (catRes.success) setCategories(["All", ...catRes.categories]);
-        if (brandRes.success) setBrands(["All", ...brandRes.brands]);
+        if (catRes.success) setCategories(["All", ...(catRes.categories || [])]);
+        if (brandRes.success) setBrands(["All", ...(brandRes.brands || [])]);
       } catch (err) {
         console.error("Failed to fetch filters", err);
       }

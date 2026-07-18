@@ -28,8 +28,9 @@ import CreateAdmin from './pages/Admin/CreateAdmin'
 import Footer from './components/Footer'
 import MyOrder from './pages/MyOrder'
 import ForgotPassword from './pages/ForgotPassword'
+import ErrorPage from './pages/ErrorPage'
 
-const router = createBrowserRouter([
+const rawRoutes = [
   {
     path: '/',
     element: <><Navbar /><Home /><Footer /></>
@@ -132,7 +133,14 @@ const router = createBrowserRouter([
       },
     ]
   },
-])
+];
+
+const router = createBrowserRouter(
+  rawRoutes.map(route => ({
+    ...route,
+    errorElement: <ErrorPage />
+  }))
+);
 
 const App = () => {
   return (

@@ -53,7 +53,7 @@ func (r *repository) GetUniqueCategories(ctx context.Context) ([]string, error) 
 	}
 	defer rows.Close()
 
-	var categories []string
+	categories := make([]string, 0)
 	for rows.Next() {
 		var cat string
 		if err := rows.Scan(&cat); err != nil {
@@ -71,7 +71,7 @@ func (r *repository) GetUniqueBrands(ctx context.Context) ([]string, error) {
 	}
 	defer rows.Close()
 
-	var brands []string
+	brands := make([]string, 0)
 	for rows.Next() {
 		var brand string
 		if err := rows.Scan(&brand); err != nil {
