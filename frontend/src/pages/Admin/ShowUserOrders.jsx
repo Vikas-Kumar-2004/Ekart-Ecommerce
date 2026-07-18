@@ -128,7 +128,7 @@ const ShowUserOrders = () => {
                 <div>
                   <h3 className="font-medium mb-3 text-gray-800">Products:</h3>
                   <ul className="space-y-3">
-                    {order.products?.map((product, index) => (
+                    {(order.products || []).map((product, index) => (
                       <li
                         key={index}
                         className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 p-3 rounded-lg gap-4"

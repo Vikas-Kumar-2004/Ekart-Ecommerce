@@ -4,7 +4,7 @@ import { Input } from './ui/input'
 import { useDispatch } from 'react-redux'
 import { setCart } from '@/redux/productSlice'
 import { toast } from 'sonner'
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart, Loader2 } from 'lucide-react'
 import axios from 'axios'
 
 import { FaWhatsapp } from 'react-icons/fa'
@@ -13,11 +13,13 @@ import { useNavigate } from 'react-router-dom'
 const ProductDesc = ({ product }) => {
   const navigate = useNavigate()
   const [quantity, setQuantity] = React.useState(1)
+  const [loading, setLoading] = React.useState(false)
   const dispatch = useDispatch()
   const accessToken = localStorage.getItem('accessToken')
   
   const addToCart = async (productId) => {
     try {
+      setLoading(true);
       const res = await axios.post(`${import.meta.env.VITE_URL}/api/v1/cart/add`, { productId, quantity }, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
@@ -40,6 +42,8 @@ const ProductDesc = ({ product }) => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,8 +68,8 @@ const ProductDesc = ({ product }) => {
       </div>
       
       <div className='flex flex-col sm:flex-row gap-3 mt-4 md:mt-0'>
-        <Button onClick={() => addToCart(product.id)} className='bg-pink-600 w-full sm:w-max'>
-          <ShoppingCart className="mr-2 h-4 w-4"/>Add to Cart
+        <Button disabled={loading} onClick={() => addToCart(product.id)} className='bg-pink-600 w-full sm:w-max'>
+          {loading ? <><Loader2 className='mr-2 h-4 w-4 animate-spin'/> Please wait</> : <><ShoppingCart className="mr-2 h-4 w-4"/> Add to Cart</>}
         </Button>
         <Button 
           variant="outline" 

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { setCart } from '@/redux/productSlice'
-import { ArrowLeft, ShoppingCart, Trash2 } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, Trash2, Loader2 } from 'lucide-react'
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
@@ -15,6 +15,8 @@ const Cart = () => {
   const { cart } = useSelector(store => store.product)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const [isCheckoutLoading, setIsCheckoutLoading] = React.useState(false)
+  const [isShoppingLoading, setIsShoppingLoading] = React.useState(false)
   const subtotal = cart?.totalPrice || 0;
   const shipping = subtotal > 50 ? 0 : 10;
   const tax = parseFloat((subtotal * 0.05).toFixed(2)) || 0;
@@ -165,12 +167,33 @@ const Cart = () => {
                         <Button variant="outline" className="shrink-0 bg-white hover:bg-gray-50">Apply</Button>
                       </div>
 
-                      <Button onClick={() => navigate('/address')} size="lg" className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-6 rounded-xl shadow-md transition-transform hover:scale-[1.02]">
-                        Proceed to Checkout
+                      <Button 
+                        disabled={isCheckoutLoading}
+                        onClick={() => {
+                          setIsCheckoutLoading(true);
+                          setTimeout(() => {
+                            setIsCheckoutLoading(false);
+                            navigate('/address');
+                          }, 500);
+                        }} 
+                        size="lg" 
+                        className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-6 rounded-xl shadow-md transition-transform hover:scale-[1.02]">
+                        {isCheckoutLoading ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Processing...</> : 'Proceed to Checkout'}
                       </Button>
 
-                      <Button variant="ghost" size="lg" className="w-full text-gray-600 hover:text-pink-600 hover:bg-pink-50 rounded-xl" asChild>
-                        <Link to="/products">Continue Shopping</Link>
+                      <Button 
+                        disabled={isShoppingLoading}
+                        onClick={() => {
+                          setIsShoppingLoading(true);
+                          setTimeout(() => {
+                            setIsShoppingLoading(false);
+                            navigate('/products');
+                          }, 500);
+                        }}
+                        variant="ghost" 
+                        size="lg" 
+                        className="w-full text-gray-600 hover:text-pink-600 hover:bg-pink-50 rounded-xl">
+                        {isShoppingLoading ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Loading...</> : 'Continue Shopping'}
                       </Button>
                     </div>
 

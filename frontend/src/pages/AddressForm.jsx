@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { addAddress, deleteAddress, setCart, setSelectedAddress } from "@/redux/productSlice";
 import axios from "axios";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 
 const AddressForm = () => {
   const [formData, setFormData] = useState({
@@ -26,13 +26,18 @@ const AddressForm = () => {
 
   const { cart, addresses, selectedAddress } = useSelector((store) => store.product);
   const [showForm, setShowForm] = useState(addresses.length > 0 ? false : true);
+  const [isSaving, setIsSaving] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Dummy payment form state
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [upiId, setUpiId] = useState("");
+  
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [isPayingNow, setIsPayingNow] = useState(false);
+  const [isPayingLater, setIsPayingLater] = useState(false);
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
 
   const subtotal = cart?.totalPrice || 0;
   const shipping = subtotal > 50 ? 0 : 10;
@@ -50,21 +55,24 @@ const AddressForm = () => {
       return;
     }
 
-    dispatch(addAddress(formData));
-    // Automatically select the newly added address (which will be at the end of the array)
-    dispatch(setSelectedAddress(addresses.length));
-    
-    setFormData({
-      fullName: "",
-      phone: "",
-      email: "",
-      address: "",
-      city: "",
-      state: "",
-      zip: "",
-      country: "",
-    });
-    setShowForm(false);
+    setIsSaving(true);
+    setTimeout(() => {
+      dispatch(addAddress(formData));
+      dispatch(setSelectedAddress(addresses.length));
+      
+      setFormData({
+        fullName: "",
+        phone: "",
+        email: "",
+        address: "",
+        city: "",
+        state: "",
+        zip: "",
+        country: "",
+      });
+      setShowForm(false);
+      setIsSaving(false);
+    }, 500);
   };
 
   console.log('cart', cart);
@@ -138,6 +146,8 @@ const AddressForm = () => {
 
   const handleCreateOrder = async () => {
     try {
+      setIsCreatingOrder(true);
+      const accessToken = localStorage.getItem("accessToken");
       const { data } = await axios.post(`${import.meta.env.VITE_URL}/api/v1/orders/create-order`, {
         products: cart?.items?.map(item => ({
           productId: item.productId.id,
@@ -159,14 +169,20 @@ const AddressForm = () => {
     } catch (error) {
       console.error(error);
       toast.error("Failed to create order");
+    } finally {
+      setIsCreatingOrder(false);
     }
   };
 
   const handlePayNowClick = () => {
     if (!createdOrder) return;
-    setPaymentMethod("UPI");
-    setUpiId("");
-    setShowPaymentModal(true);
+    setIsPayingNow(true);
+    setTimeout(() => {
+      setIsPayingNow(false);
+      setPaymentMethod("UPI");
+      setUpiId("");
+      setShowPaymentModal(true);
+    }, 500);
   };
 
   const handleDummyPaymentSubmit = async (e) => {
@@ -177,6 +193,7 @@ const AddressForm = () => {
     }
     
     try {
+      setIsSubmittingPayment(true);
       const accessToken = localStorage.getItem("accessToken");
       const rzpOrderId = createdOrder.id;
 
@@ -202,6 +219,8 @@ const AddressForm = () => {
     } catch (error) {
       console.error(error);
       toast.error("Error verifying payment");
+    } finally {
+      setIsSubmittingPayment(false);
     }
   };
 
@@ -312,8 +331,8 @@ const AddressForm = () => {
                   />
                 </div>
               </div>
-              <Button onClick={handleSave} className="w-full">
-                Save & Continue
+              <Button disabled={isSaving} onClick={handleSave} className="w-full">
+                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Please wait</> : 'Save & Continue'}
               </Button>
             </>
           ) : (
@@ -359,11 +378,11 @@ const AddressForm = () => {
                     + Add New Address
                   </Button>
                   <Button
-                    disabled={selectedAddress === null}
+                    disabled={selectedAddress === null || isCreatingOrder}
                     onClick={handleCreateOrder}
                     className="w-full bg-pink-600 hover:bg-pink-700"
                   >
-                    Create Order
+                    {isCreatingOrder ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Processing...</> : 'Create Order'}
                   </Button>
                 </>
               ) : (
@@ -376,20 +395,26 @@ const AddressForm = () => {
                     <p className="text-sm text-center">Your order status is currently <span className="font-bold">Pending</span>.</p>
                   </div>
                   <Button
+                    disabled={isPayingNow}
                     onClick={handlePayNowClick}
                     className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-6 text-lg"
                   >
-                    Pay Now
+                    {isPayingNow ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Loading...</> : 'Pay Now'}
                   </Button>
                   <Button
+                    disabled={isPayingLater}
                     variant="outline"
                     onClick={() => {
-                      dispatch(setCart({ items: [], totalPrice: 0 }));
-                      navigate('/orders');
+                      setIsPayingLater(true);
+                      setTimeout(() => {
+                        setIsPayingLater(false);
+                        dispatch(setCart({ items: [], totalPrice: 0 }));
+                        navigate('/orders');
+                      }, 500);
                     }}
                     className="w-full py-6 text-lg text-gray-600 border-gray-300 hover:bg-gray-50"
                   >
-                    Pay Later
+                    {isPayingLater ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Processing...</> : 'Pay Later'}
                   </Button>
                 </div>
               )}
@@ -483,8 +508,8 @@ const AddressForm = () => {
                 </div>
               )}
 
-              <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700 text-white shadow-md py-6 text-lg font-bold mt-4 transition-all hover:scale-[1.02]">
-                Submit Payment
+              <Button disabled={isSubmittingPayment} type="submit" className="w-full bg-pink-600 hover:bg-pink-700 text-white shadow-md py-6 text-lg font-bold mt-4 transition-all hover:scale-[1.02]">
+                {isSubmittingPayment ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Processing...</> : 'Submit Payment'}
               </Button>
             </form>
           </div>

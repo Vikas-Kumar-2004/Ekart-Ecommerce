@@ -15,7 +15,7 @@ const AdminOrders = () => {
             const { data } = await axios.get(`${import.meta.env.VITE_URL}/api/v1/orders/all`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
-            if (data.success) setOrders(data.orders);
+            if (data.success) setOrders(data.orders || []);
         } catch (error) {
             console.error("❌ Failed to fetch admin orders:", error);
         } finally {

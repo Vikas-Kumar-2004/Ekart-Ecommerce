@@ -155,7 +155,7 @@ func (s *service) GetAllOrders(ctx context.Context) ([]*OrderResponse, error) {
 		return nil, err
 	}
 
-	var response []*OrderResponse
+	response := make([]*OrderResponse, 0)
 	for _, o := range orders {
 		response = append(response, toOrderResponse(o))
 	}
@@ -188,7 +188,7 @@ func (s *service) UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, req 
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 func toOrderResponse(o *Order) *OrderResponse {
-	var items []OrderItemResponse
+	items := make([]OrderItemResponse, 0)
 	for _, item := range o.Items {
 		items = append(items, OrderItemResponse{
 			ProductID:   item.ProductID,
@@ -222,7 +222,7 @@ func (s *service) GetUserOrders(ctx context.Context, userID uuid.UUID) ([]*Order
         return nil, err
     }
 
-    var response []*OrderResponse
+    response := make([]*OrderResponse, 0)
     for _, o := range orders {
         response = append(response, toOrderResponse(o)) // pichla helper reuse
     }

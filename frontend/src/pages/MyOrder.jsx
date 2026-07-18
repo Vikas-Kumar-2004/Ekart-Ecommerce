@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import axios from 'axios'
-import { ArrowLeft, MapPin, FileText } from 'lucide-react'
+import { ArrowLeft, MapPin, FileText, Loader2 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { generateInvoice } from '../utils/invoiceGenerator'
@@ -23,6 +23,8 @@ const MyOrder = ({ hideBackButton = false }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [upiId, setUpiId] = useState("");
+  const [isPayingNow, setIsPayingNow] = useState(null);
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
 
   const getUserOrders = async () => {
     try {
@@ -43,10 +45,14 @@ const MyOrder = ({ hideBackButton = false }) => {
   }
 
   const handlePayNowClick = (order) => {
-    setSelectedOrder(order);
-    setPaymentMethod("UPI");
-    setUpiId("");
-    setShowPaymentModal(true);
+    setIsPayingNow(order.id);
+    setTimeout(() => {
+      setIsPayingNow(null);
+      setSelectedOrder(order);
+      setPaymentMethod("UPI");
+      setUpiId("");
+      setShowPaymentModal(true);
+    }, 500);
   };
 
   const handleDummyPaymentSubmit = async (e) => {
@@ -57,6 +63,7 @@ const MyOrder = ({ hideBackButton = false }) => {
     }
     
     try {
+      setIsSubmittingPayment(true);
       const accessToken = localStorage.getItem("accessToken");
       const rzpOrderId = selectedOrder.razorpayOrderId || selectedOrder.id;
 
@@ -79,8 +86,10 @@ const MyOrder = ({ hideBackButton = false }) => {
         toast.error("❌ Payment Verification Failed");
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
       toast.error("Error verifying payment");
+    } finally {
+      setIsSubmittingPayment(false);
     }
   };
 
@@ -152,8 +161,8 @@ const MyOrder = ({ hideBackButton = false }) => {
                       {order.status}
                     </span>
                     {order.status === 'Pending' && (
-                      <Button onClick={() => handlePayNowClick(order)} size="sm" className="bg-pink-600 hover:bg-pink-700 shadow-sm">
-                        Pay Now
+                      <Button disabled={isPayingNow === order.id} onClick={() => handlePayNowClick(order)} size="sm" className="bg-pink-600 hover:bg-pink-700 shadow-sm">
+                        {isPayingNow === order.id ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Processing</> : 'Pay Now'}
                       </Button>
                     )}
                     {order.status !== 'Pending' && order.status !== 'Failed' && (
@@ -185,7 +194,8 @@ const MyOrder = ({ hideBackButton = false }) => {
                 <div>
                   <h3 className="font-medium mb-3">Products:</h3>
                   <ul className="space-y-3">
-                    {order.products.map((product, index) => (
+                    {console.log("Checking order products for order:", order.id, order)}
+                    {(order.products || []).map((product, index) => (
                       <li
                         key={index}
                         className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 md:gap-4 bg-gray-50 p-3 rounded-lg"
@@ -261,8 +271,8 @@ const MyOrder = ({ hideBackButton = false }) => {
                 </div>
               )}
 
-              <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700 shadow-md py-6 text-lg font-bold mt-4 transition-all hover:scale-[1.02]">
-                Submit Payment
+              <Button disabled={isSubmittingPayment} type="submit" className="w-full bg-pink-600 hover:bg-pink-700 text-white shadow-md py-6 text-lg font-bold mt-4 transition-all hover:scale-[1.02]">
+                {isSubmittingPayment ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Processing...</> : 'Submit Payment'}
               </Button>
             </form>
           </div>
