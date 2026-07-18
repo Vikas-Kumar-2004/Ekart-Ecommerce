@@ -11,7 +11,7 @@ import About from './pages/About'
 import Cart from './pages/Cart'
 import Dashboard from './pages/Dashboard'
 import SingleProduct from './pages/SingleProduct'
-import ProtectedRoute from './components/protectedRoute'
+import ProtectedRoute from './components/ProtectedRoute'
 import AddProduct from './pages/Admin/AddProduct'
 import AdminProduct from './pages/Admin/AdminProduct'
 import AddressForm from './pages/AddressForm'
@@ -32,7 +32,7 @@ import ForgotPassword from './pages/ForgotPassword'
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <><Navbar /><Home /><Footer/></>
+    element: <><Navbar /><Home /><Footer /></>
   },
   {
     path: '/login',
@@ -56,7 +56,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/products',
-    element: <><Navbar /><Product /><Footer/></>
+    element: <><Navbar /><Product /><Footer /></>
   },
   {
     path: '/products/:id',
@@ -68,7 +68,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/profile/:userId',
-    element: <ProtectedRoute><Navbar /><Profile/></ProtectedRoute>
+    element: <ProtectedRoute><Navbar /><Profile /></ProtectedRoute>
   },
   {
     path: '/cart',
@@ -96,7 +96,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "sales",
-        element: <><AdminSales/></>
+        element: <><AdminSales /></>
       },
       {
         path: "add-product",
@@ -129,7 +129,7 @@ const router = createBrowserRouter([
       {
         path: "admins/create",
         element: <><CreateAdmin /></>
-      },   
+      },
     ]
   },
 ])

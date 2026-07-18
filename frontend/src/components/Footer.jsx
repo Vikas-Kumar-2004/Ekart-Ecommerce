@@ -32,10 +32,26 @@ const Footer = () => {
         <div className='mb-6 md:mb-0'>
             <h3 className='text-xl font-semibold'>Follow Us</h3>
             <div className='flex space-x-4 mt-2'>
-                <FaFacebook/>
-                <FaInstagram/>
-                <FaTwitterSquare/>
-                <FaPinterest/>
+                {import.meta.env.VITE_FACEBOOK_URL && (
+                    <a href={import.meta.env.VITE_FACEBOOK_URL} target="_blank" rel="noopener noreferrer" className="hover:text-pink-600 transition-colors">
+                        <FaFacebook size={24} />
+                    </a>
+                )}
+                {import.meta.env.VITE_INSTAGRAM_URL && (
+                    <a href={import.meta.env.VITE_INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="hover:text-pink-600 transition-colors">
+                        <FaInstagram size={24} />
+                    </a>
+                )}
+                {import.meta.env.VITE_TWITTER_URL && (
+                    <a href={import.meta.env.VITE_TWITTER_URL} target="_blank" rel="noopener noreferrer" className="hover:text-pink-600 transition-colors">
+                        <FaTwitterSquare size={24} />
+                    </a>
+                )}
+                {import.meta.env.VITE_PINTEREST_URL && (
+                    <a href={import.meta.env.VITE_PINTEREST_URL} target="_blank" rel="noopener noreferrer" className="hover:text-pink-600 transition-colors">
+                        <FaPinterest size={24} />
+                    </a>
+                )}
             </div>
         </div>
         {/* newsletter subscription */}
