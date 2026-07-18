@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import axios from 'axios'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -29,6 +30,7 @@ import Footer from './components/Footer'
 import MyOrder from './pages/MyOrder'
 import ForgotPassword from './pages/ForgotPassword'
 import ErrorPage from './pages/ErrorPage'
+import SplashScreen from './components/SplashScreen'
 
 const rawRoutes = [
   {
@@ -133,6 +135,10 @@ const rawRoutes = [
       },
     ]
   },
+  {
+    path: '*',
+    element: <><Navbar /><ErrorPage /><Footer /></>
+  },
 ];
 
 const router = createBrowserRouter(
@@ -143,6 +149,36 @@ const router = createBrowserRouter(
 );
 
 const App = () => {
+  const [isBackendReady, setIsBackendReady] = useState(false);
+
+  useEffect(() => {
+    let timeoutId;
+    
+    const checkHealth = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_URL}/health`);
+        if (res.status === 200) {
+          setIsBackendReady(true);
+        } else {
+          timeoutId = setTimeout(checkHealth, 2000);
+        }
+      } catch (error) {
+        // Backend not ready yet, keep trying
+        timeoutId = setTimeout(checkHealth, 2000);
+      }
+    };
+
+    checkHealth();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
+
+  if (!isBackendReady) {
+    return <SplashScreen />;
+  }
+
   return (
     <div >
       <RouterProvider router={router} />
