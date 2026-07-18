@@ -188,11 +188,13 @@ const Product = () => {
 
           {/* Product Grid */}
           <div className="pt-[140px] md:pt-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-7 px-4 md:px-0">
-            {(loading && currentProducts.length === 0) ? (
-              <p>Loading...</p>
+            {loading ? (
+              Array(10).fill(0).map((_, index) => (
+                <ProductCard key={`skeleton-${index}`} product={{}} loading={true} />
+              ))
             ) : currentProducts.length > 0 ? (
               currentProducts.map((product, index) => (
-                <ProductCard key={index} product={product} loading={loading} />
+                <ProductCard key={product.id || index} product={product} loading={false} />
               ))
             ) : (
               <p>No products found</p>
