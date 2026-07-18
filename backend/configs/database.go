@@ -19,6 +19,7 @@ func NewPostgresDB() *pgxpool.Pool {
 
 	// Connection string
 	dsn := os.Getenv("DATABASE_URL")
+	log.Println("DSN length:", len(dsn)) // temporary debug line
 	if dsn == "" {
 		log.Fatal("DATABASE_URL environment variable is not set")
 	}
