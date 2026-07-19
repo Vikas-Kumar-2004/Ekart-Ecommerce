@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { setUser } from "@/redux/userSlice"
+import { setCart } from "@/redux/productSlice"
 import axios from "axios"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import React, { useState } from 'react'
@@ -49,8 +50,41 @@ const Login = () => {
                localStorage.setItem("accessToken", res.data.token)
                localStorage.setItem("refreshToken", res.data.refreshToken)
                dispatch(setUser(res.data.user))
-               navigate('/')
                toast.success(res.data.message)
+
+               const pendingItemStr = localStorage.getItem('pendingCartItem');
+               if (pendingItemStr) {
+                   try {
+                       const pendingItem = JSON.parse(pendingItemStr);
+                       const cartRes = await axios.post(`${import.meta.env.VITE_URL}/api/v1/cart/add`, pendingItem, {
+                           headers: { Authorization: `Bearer ${res.data.token}` }
+                       });
+                       if (cartRes.data.success) {
+                           // Try to update global cart state if store is configured that way
+                           try { dispatch(setCart(cartRes.data.cart)); } catch (e) {}
+                           localStorage.removeItem('pendingCartItem');
+                           toast.success("Item added to cart automatically");
+                           navigate('/cart', { replace: true });
+                           return;
+                       }
+                   } catch (err) {
+                       console.error("Failed to add pending item", err);
+                       localStorage.removeItem('pendingCartItem');
+                   }
+               } else {
+                   const redirectUrl = localStorage.getItem('redirectUrl');
+                   if (redirectUrl) {
+                       localStorage.removeItem('redirectUrl');
+                       if (redirectUrl === 'profile') {
+                           navigate(`/profile/${res.data.user.id}`, { replace: true });
+                       } else {
+                           navigate(redirectUrl, { replace: true });
+                       }
+                       return;
+                   }
+               }
+
+               navigate('/', { replace: true })
             }
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
@@ -121,7 +155,7 @@ const Login = () => {
                                 loading ? <><Loader2 className='h-4 w-4 animate-spin mr-2' />Please wait</> : 'Login'
                             }
                         </Button>
-                        <p className='text-gray-700 text-sm'>Don't have an account? <Link to={'/signup'} className='hover:underline cursor-pointer text-pink-800'>signup</Link></p>
+                        <p className='text-gray-700 text-sm'>Don't have an account? <Link to={'/signup'} replace className='hover:underline cursor-pointer text-pink-800'>signup</Link></p>
                     </CardFooter>
                 </form>
             </Card>
