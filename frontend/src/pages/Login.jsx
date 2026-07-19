@@ -71,6 +71,17 @@ const Login = () => {
                        console.error("Failed to add pending item", err);
                        localStorage.removeItem('pendingCartItem');
                    }
+               } else {
+                   const redirectUrl = localStorage.getItem('redirectUrl');
+                   if (redirectUrl) {
+                       localStorage.removeItem('redirectUrl');
+                       if (redirectUrl === 'profile') {
+                           navigate(`/profile/${res.data.user.id}`, { replace: true });
+                       } else {
+                           navigate(redirectUrl, { replace: true });
+                       }
+                       return;
+                   }
                }
 
                navigate('/', { replace: true })
@@ -144,7 +155,7 @@ const Login = () => {
                                 loading ? <><Loader2 className='h-4 w-4 animate-spin mr-2' />Please wait</> : 'Login'
                             }
                         </Button>
-                        <p className='text-gray-700 text-sm'>Don't have an account? <Link to={'/signup'} className='hover:underline cursor-pointer text-pink-800'>signup</Link></p>
+                        <p className='text-gray-700 text-sm'>Don't have an account? <Link to={'/signup'} replace className='hover:underline cursor-pointer text-pink-800'>signup</Link></p>
                     </CardFooter>
                 </form>
             </Card>

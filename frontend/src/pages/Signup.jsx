@@ -16,6 +16,7 @@ import axios from 'axios'
 import { toast } from 'sonner'
 import { useDispatch } from "react-redux"
 import { setUser } from "@/redux/userSlice"
+import { setCart } from "@/redux/productSlice"
 
 const Signup = () => {
     const [showPassword, setShowPassword] = useState(false)
@@ -51,8 +52,40 @@ const Signup = () => {
                 dispatch(setUser(res.data.user))
                 localStorage.setItem("accessToken", res.data.user.token)
                 localStorage.setItem("refreshToken", res.data.user.refreshToken)
-                navigate('/')
                 toast.success(res.data.message)
+
+                const pendingItemStr = localStorage.getItem('pendingCartItem');
+                if (pendingItemStr) {
+                    try {
+                        const pendingItem = JSON.parse(pendingItemStr);
+                        const cartRes = await axios.post(`${import.meta.env.VITE_URL}/api/v1/cart/add`, pendingItem, {
+                            headers: { Authorization: `Bearer ${res.data.user.token}` }
+                        });
+                        if (cartRes.data.success) {
+                            try { dispatch(setCart(cartRes.data.cart)); } catch (e) {}
+                            localStorage.removeItem('pendingCartItem');
+                            toast.success("Item added to cart automatically");
+                            navigate('/cart', { replace: true });
+                            return;
+                        }
+                    } catch (err) {
+                        console.error("Failed to add pending item", err);
+                        localStorage.removeItem('pendingCartItem');
+                    }
+                } else {
+                    const redirectUrl = localStorage.getItem('redirectUrl');
+                    if (redirectUrl) {
+                        localStorage.removeItem('redirectUrl');
+                        if (redirectUrl === 'profile') {
+                            navigate(`/profile/${res.data.user.id}`, { replace: true });
+                        } else {
+                            navigate(redirectUrl, { replace: true });
+                        }
+                        return;
+                    }
+                }
+
+                navigate('/', { replace: true })
             }
         } catch (error) {
             console.log(error);
@@ -140,7 +173,7 @@ const Signup = () => {
                             loading ? <><Loader2 className='h-4 w-4 animate-spin mr-2' />Please wait</> : 'Signup'
                         }
                     </Button>
-                    <p className='text-gray-700 text-sm'>Already have an account? <Link to={'/login'} className='hover:underline  cursor-pointer text-pink-800'>Login</Link></p>
+                    <p className='text-gray-700 text-sm'>Already have an account? <Link to={'/login'} replace className='hover:underline  cursor-pointer text-pink-800'>Login</Link></p>
                 </CardFooter>
             </Card>
         </div>

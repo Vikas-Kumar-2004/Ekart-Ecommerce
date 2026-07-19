@@ -7,6 +7,7 @@ import axios from 'axios'
 import { toast } from 'sonner'
 import { setUser } from '@/redux/userSlice'
 import { setCart } from '@/redux/productSlice'
+import GuestActionModal from './GuestActionModal'
 
 const Navbar = () => {
     const { user } = useSelector(store => store.user)
@@ -18,6 +19,16 @@ const Navbar = () => {
     const accessToken = localStorage.getItem('accessToken')
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [showAuthModal, setShowAuthModal] = useState(false)
+    const [authModalRedirect, setAuthModalRedirect] = useState('/cart')
+
+    const handleAuthClick = (e, redirectUrl) => {
+        if (!user) {
+            e.preventDefault();
+            setAuthModalRedirect(redirectUrl);
+            setShowAuthModal(true);
+        }
+    }
 
     const logoutHandler = async () => {
         try {
@@ -81,7 +92,7 @@ const Navbar = () => {
                             admin && <Link to={'/dashboard/sales'}><li>Dashboard</li></Link>
                         }
                     </ul>
-                    <Link to={'/cart'} className='relative'>
+                    <Link to={'/cart'} className='relative' onClick={(e) => handleAuthClick(e, '/cart')}>
                         <ShoppingCart />
                         <span className='bg-pink-500 rounded-full absolute text-white -top-3 -right-5 px-2'>{cart?.items?.length || 0}</span>
                     </Link>
@@ -98,9 +109,9 @@ const Navbar = () => {
                     {user ? (
                         <Link to={`/profile/${user.id}`} className='text-gray-700 hover:text-pink-600 transition-colors'><User size={22} /></Link>
                     ) : (
-                        <Link to={'/login'} className='text-gray-700 hover:text-pink-600 transition-colors'><User size={22} /></Link>
+                        <button onClick={(e) => handleAuthClick(e, 'profile')} className='text-gray-700 hover:text-pink-600 transition-colors'><User size={22} /></button>
                     )}
-                    <Link to={'/cart'} className='relative text-gray-700 hover:text-pink-600 transition-colors'>
+                    <Link to={'/cart'} onClick={(e) => handleAuthClick(e, '/cart')} className='relative text-gray-700 hover:text-pink-600 transition-colors'>
                         <ShoppingCart size={22} />
                         <span className='bg-pink-500 rounded-full absolute text-white -top-2 -right-3 px-1.5 text-[10px]'>{cart?.items?.length || 0}</span>
                     </Link>
@@ -126,6 +137,13 @@ const Navbar = () => {
                     </ul>
                 </div>
             )}
+            
+            <GuestActionModal 
+                isOpen={showAuthModal}
+                onClose={() => setShowAuthModal(false)}
+                redirectUrl={authModalRedirect}
+                message={`Please login to access your ${authModalRedirect === '/cart' ? 'shopping cart' : 'profile'}.`}
+            />
         </header>
     )
 }

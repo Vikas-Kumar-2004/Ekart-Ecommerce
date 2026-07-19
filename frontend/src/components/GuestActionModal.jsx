@@ -1,22 +1,35 @@
 import React from 'react';
 import { Button } from './ui/button';
 import { FaWhatsapp } from 'react-icons/fa';
-import { LogIn, X } from 'lucide-react';
+import { LogIn, X, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const GuestActionModal = ({ isOpen, onClose, product, quantity = 1 }) => {
+const GuestActionModal = ({ 
+  isOpen, 
+  onClose, 
+  product, 
+  quantity = 1, 
+  redirectUrl = '/cart', 
+  message = "Please login to add items to your cart, or inquire directly via WhatsApp." 
+}) => {
   const navigate = useNavigate();
+  const [isLoggingIn, setIsLoggingIn] = React.useState(false);
+  const [isInquiring, setIsInquiring] = React.useState(false);
 
   if (!isOpen) return null;
 
   const handleWhatsAppClick = () => {
-    const phoneNumber = import.meta.env.VITE_PHONE_NUMBER;
-    const currentUrl = window.location.origin + `/products/${product.id}`;
-    const message = `Hi! I'm interested in *${product.productName}*. Price is ₹${product.productPrice}. Here is the link: ${currentUrl}. Can you share more details?`;
-    
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank");
-    onClose();
+    setIsInquiring(true);
+    setTimeout(() => {
+      setIsInquiring(false);
+      const phoneNumber = import.meta.env.VITE_PHONE_NUMBER;
+      const currentUrl = window.location.origin + `/products/${product.id}`;
+      const message = `Hi! I'm interested in *${product.productName}*. Price is ₹${product.productPrice}. Here is the link: ${currentUrl}. Can you share more details?`;
+      
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, "_blank");
+      onClose();
+    }, 500);
   };
 
   return (
@@ -38,28 +51,40 @@ const GuestActionModal = ({ isOpen, onClose, product, quantity = 1 }) => {
           </div>
           <h2 className="text-xl font-bold text-gray-800">Login Required</h2>
           <p className="text-sm text-gray-500 mt-2">
-            Please login to add items to your cart, or inquire directly via WhatsApp.
+            {message}
           </p>
         </div>
 
         <div className="flex flex-col gap-3">
           <Button 
+            disabled={isLoggingIn || isInquiring}
             onClick={(e) => { 
-              e.stopPropagation(); 
-              localStorage.setItem('pendingCartItem', JSON.stringify({ productId: product.id, quantity }));
-              navigate('/login'); 
+              e.stopPropagation();
+              setIsLoggingIn(true);
+              setTimeout(() => {
+                setIsLoggingIn(false);
+                if (product) {
+                    localStorage.setItem('pendingCartItem', JSON.stringify({ productId: product.id, quantity }));
+                }
+                localStorage.setItem('redirectUrl', redirectUrl);
+                navigate('/login'); 
+              }, 500);
             }} 
             className="w-full bg-pink-600 hover:bg-pink-700 py-6 text-base"
           >
-            <LogIn className="w-5 h-5 mr-2" /> Login to Continue
+            {isLoggingIn ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Please wait</> : <><LogIn className="w-5 h-5 mr-2" /> Login to Continue</>}
           </Button>
-          <Button 
-            variant="outline"
-            onClick={(e) => { e.stopPropagation(); handleWhatsAppClick(); }} 
-            className="w-full border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700 py-6 text-base"
-          >
-            <FaWhatsapp className="w-5 h-5 mr-2" /> Inquire on WhatsApp
-          </Button>
+          
+          {product && (
+            <Button 
+              variant="outline"
+              disabled={isLoggingIn || isInquiring}
+              onClick={(e) => { e.stopPropagation(); handleWhatsAppClick(); }} 
+              className="w-full border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700 py-6 text-base"
+            >
+              {isInquiring ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Opening WhatsApp</> : <><FaWhatsapp className="w-5 h-5 mr-2" /> Inquire on WhatsApp</>}
+            </Button>
+          )}
         </div>
       </div>
     </div>
