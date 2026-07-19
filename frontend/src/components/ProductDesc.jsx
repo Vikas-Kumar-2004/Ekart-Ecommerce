@@ -9,15 +9,22 @@ import axios from 'axios'
 
 import { FaWhatsapp } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
+import GuestActionModal from './GuestActionModal'
 
 const ProductDesc = ({ product }) => {
   const navigate = useNavigate()
   const [quantity, setQuantity] = React.useState(1)
   const [loading, setLoading] = React.useState(false)
+  const [showGuestModal, setShowGuestModal] = React.useState(false)
   const dispatch = useDispatch()
   const accessToken = localStorage.getItem('accessToken')
   
   const addToCart = async (productId) => {
+    if (!accessToken) {
+        setShowGuestModal(true);
+        return;
+    }
+
     try {
       setLoading(true);
       const res = await axios.post(`${import.meta.env.VITE_URL}/api/v1/cart/add`, { productId, quantity }, {
@@ -79,6 +86,13 @@ const ProductDesc = ({ product }) => {
           <FaWhatsapp className="mr-2 h-5 w-5"/> Inquire on WhatsApp
         </Button>
       </div>
+      
+      <GuestActionModal 
+        isOpen={showGuestModal} 
+        onClose={() => setShowGuestModal(false)} 
+        product={product} 
+        quantity={quantity}
+      />
     </div>
   )
 }

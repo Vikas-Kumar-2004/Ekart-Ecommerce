@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { toast } from 'sonner'
 import { ShoppingCart, Loader2 } from 'lucide-react'
+import GuestActionModal from './GuestActionModal'
 
 const ProductCard = ({ product, loading }) => {
     // const { carts } = useSelector(store => store.cart)
@@ -16,8 +17,14 @@ const ProductCard = ({ product, loading }) => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const [isAdding, setIsAdding] = React.useState(false)
+    const [showGuestModal, setShowGuestModal] = React.useState(false)
 
     const addToCart = async (productId) => {
+        if (!accessToken) {
+            setShowGuestModal(true);
+            return;
+        }
+
         try {
             setIsAdding(true);
             const res = await axios.post(`${import.meta.env.VITE_URL}/api/v1/cart/add`, { productId }, {
@@ -86,6 +93,11 @@ const ProductCard = ({ product, loading }) => {
                     </div>
             }
 
+            <GuestActionModal 
+                isOpen={showGuestModal} 
+                onClose={() => setShowGuestModal(false)} 
+                product={product} 
+            />
         </div>
     )
 }
