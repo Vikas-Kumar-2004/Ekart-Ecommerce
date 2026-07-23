@@ -2,6 +2,7 @@ package order
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -92,7 +93,20 @@ func (h *Handler) VerifyPayment(c *gin.Context) {
 // @Success      200  {object}  map[string]any
 // @Router       /orders/admin [get]
 func (h *Handler) GetAllOrders(c *gin.Context) {
-	orders, err := h.svc.GetAllOrders(c.Request.Context())
+	pageStr := c.DefaultQuery("page", "1")
+	limitStr := c.DefaultQuery("limit", "10")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		limit = 10
+	}
+
+	orders, totalCount, err := h.svc.GetAllOrders(c.Request.Context(), page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -101,10 +115,16 @@ func (h *Handler) GetAllOrders(c *gin.Context) {
 		return
 	}
 
+	totalPages := (totalCount + limit - 1) / limit
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"count":   len(orders), // JS ka orders.length
 		"orders":  orders,
+		"pagination": gin.H{
+			"currentPage": page,
+			"totalPages":  totalPages,
+			"totalOrders": totalCount,
+		},
 	})
 }
 

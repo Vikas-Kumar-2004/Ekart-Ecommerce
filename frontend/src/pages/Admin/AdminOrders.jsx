@@ -7,15 +7,24 @@ const AdminOrders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const ordersPerPage = 10;
     const accessToken = localStorage.getItem("accessToken");
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (page = 1) => {
         try {
-            const { data } = await axios.get(`${import.meta.env.VITE_URL}/api/v1/orders/all`, {
+            setLoading(true);
+            const params = new URLSearchParams({
+                page: page.toString(),
+                limit: ordersPerPage.toString(),
+            });
+            const { data } = await axios.get(`${import.meta.env.VITE_URL}/api/v1/orders/all?${params.toString()}`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
-            if (data.success) setOrders(data.orders || []);
+            if (data.success) {
+                setOrders(data.orders || []);
+                if (data.pagination) setTotalPages(data.pagination.totalPages || 1);
+            }
         } catch (error) {
             console.error("❌ Failed to fetch admin orders:", error);
         } finally {
@@ -24,8 +33,8 @@ const AdminOrders = () => {
     };
 
     useEffect(() => {
-        fetchOrders();
-    }, [accessToken]);
+        fetchOrders(currentPage);
+    }, [accessToken, currentPage]);
 
     const updateStatus = async (orderId, newStatus) => {
         try {
@@ -47,11 +56,8 @@ const AdminOrders = () => {
         return <div className="text-center py-20 text-gray-500">Loading all orders...</div>;
     }
 
-    // Pagination Logic
-    const totalPages = Math.ceil(orders.length / ordersPerPage);
-    const indexOfLastOrder = currentPage * ordersPerPage;
-    const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-    const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+    // Pagination Logic is now server-side, currentOrders is just orders
+    const currentOrders = orders;
 
     const handlePrev = () => {
         if (currentPage > 1) {
@@ -137,14 +143,15 @@ const AdminOrders = () => {
                 </div>
             )}
 
-            {totalPages > 1 && (
+            {orders && orders.length > 0 && (
                 <div className="flex justify-between items-center mt-8 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
                     <Button
                         variant="outline"
                         onClick={handlePrev}
                         disabled={currentPage === 1}
+                        className="px-4 py-2 rounded-lg"
                     >
-                        Previous
+                        Prev
                     </Button>
                     <span className="text-sm text-gray-600 font-medium">
                         Page {currentPage} of {totalPages}
@@ -153,6 +160,7 @@ const AdminOrders = () => {
                         variant="outline"
                         onClick={handleNext}
                         disabled={currentPage === totalPages}
+                        className="px-4 py-2 rounded-lg"
                     >
                         Next
                     </Button>

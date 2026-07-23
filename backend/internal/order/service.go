@@ -149,17 +149,17 @@ func (s *service) VerifyPayment(ctx context.Context, userID uuid.UUID, req *Veri
 	return order, nil
 }
 
-func (s *service) GetAllOrders(ctx context.Context) ([]*OrderResponse, error) {
-	orders, err := s.repo.GetAll(ctx)
+func (s *service) GetAllOrders(ctx context.Context, page, limit int) ([]*OrderResponse, int, error) {
+	orders, total, err := s.repo.GetAll(ctx, page, limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	response := make([]*OrderResponse, 0)
+	var res []*OrderResponse
 	for _, o := range orders {
-		response = append(response, toOrderResponse(o))
+		res = append(res, toOrderResponse(o))
 	}
-	return response, nil
+	return res, total, nil
 }
 
 func (s *service) UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, req *UpdateOrderStatusRequest) error {

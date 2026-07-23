@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from './ui/button';
 import { FaWhatsapp } from 'react-icons/fa';
-import { LogIn, X, Loader2 } from 'lucide-react';
+import { LogIn, X, Loader2, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const GuestActionModal = ({ 
@@ -47,7 +47,11 @@ const GuestActionModal = ({
         
         <div className="text-center mb-6">
           <div className="w-12 h-12 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <ShoppingCartIcon className="w-6 h-6" />
+            {redirectUrl === 'profile' ? (
+                <User className="w-6 h-6" />
+            ) : (
+                <ShoppingCartIcon className="w-6 h-6" />
+            )}
           </div>
           <h2 className="text-xl font-bold text-gray-800">Login Required</h2>
           <p className="text-sm text-gray-500 mt-2">
