@@ -72,8 +72,10 @@ const AdminProduct = () => {
       });
       const res = await axios.get(`${import.meta.env.VITE_URL}/api/v1/product/getallproducts?${params.toString()}`);
       if (res.data.success) {
-        dispatch(setProducts(res.data.products));
-        if (res.data.pagination) setTotalPages(res.data.pagination.totalPages || 1);
+        if (res.data.products.length > 0 || searchTerm.trim() === '') {
+          dispatch(setProducts(res.data.products));
+          if (res.data.pagination) setTotalPages(res.data.pagination.totalPages || 1);
+        }
       }
     } catch (error) {
       console.log(error);

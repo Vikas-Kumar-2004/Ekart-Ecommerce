@@ -15,14 +15,14 @@ type Repository interface {
 	UpdateStatusByID(ctx context.Context, id uuid.UUID, status OrderStatus) error
 	UpdatePayment(ctx context.Context, razorpayOrderID, paymentID, signature string) (*Order, error)
 	ClearCart(ctx context.Context, cartID uuid.UUID) error
-	GetAll(ctx context.Context) ([]*Order, error)
+	GetAll(ctx context.Context, page, limit int) ([]*Order, int, error)
 	GetByUserIDDetailed(ctx context.Context, userID uuid.UUID) ([]*Order, error)
 }
 
 type Service interface {
 	CreateOrder(ctx context.Context, userID uuid.UUID, req *CreateOrderRequest) (*CreateOrderResponse, error)
 	VerifyPayment(ctx context.Context, userID uuid.UUID, req *VerifyPaymentRequest) (*Order, error)
-	GetAllOrders(ctx context.Context) ([]*OrderResponse, error)
+	GetAllOrders(ctx context.Context, page, limit int) ([]*OrderResponse, int, error)
 	GetUserOrders(ctx context.Context, userID uuid.UUID) ([]*OrderResponse, error)
 	UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, req *UpdateOrderStatusRequest) error
 }

@@ -110,33 +110,44 @@ func (r *repository) ClearCart(ctx context.Context, cartID uuid.UUID) error {
 }
 
 // JS ka Order.find({}).sort({ createdAt: -1 }).populate("user").populate("products.productId")
-func (r *repository) GetAll(ctx context.Context) ([]*Order, error) {
-	query := `
-        SELECT
-            o.id, o.user_id, o.amount, o.tax, o.shipping, o.currency,
-            o.status, o.razorpay_order_id, o.razorpay_payment_id, o.created_at,
-
-            u.first_name, u.last_name, u.email,
-
-            oi.id, oi.product_id, oi.quantity, oi.price,
-            p.product_name
-
-        FROM orders o
-        JOIN users u        ON u.id = o.user_id
-        LEFT JOIN order_items oi  ON oi.order_id = o.id
-        LEFT JOIN products p      ON p.id = oi.product_id
-
-        ORDER BY o.created_at DESC
-    `
-	rows, err := r.db.Query(ctx, query)
+func (r *repository) GetAll(ctx context.Context, page, limit int) ([]*Order, int, error) {
+	// First get total count
+	var total int
+	err := r.db.QueryRow(ctx, "SELECT COUNT(*) FROM orders").Scan(&total)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * limit
+
+	query := `
+        WITH PagedOrders AS (
+            SELECT o.id, o.user_id, o.amount, o.tax, o.shipping, o.currency,
+                   o.status, o.razorpay_order_id, o.razorpay_payment_id, o.created_at,
+                   u.first_name, u.last_name, u.email
+            FROM orders o
+            JOIN users u ON u.id = o.user_id
+            ORDER BY o.created_at DESC
+            LIMIT $1 OFFSET $2
+        )
+        SELECT po.id, po.user_id, po.amount, po.tax, po.shipping, po.currency,
+               po.status, po.razorpay_order_id, po.razorpay_payment_id, po.created_at,
+               po.first_name, po.last_name, po.email,
+               oi.id, oi.product_id, oi.quantity, oi.price,
+               p.product_name
+        FROM PagedOrders po
+        LEFT JOIN order_items oi  ON oi.order_id = po.id
+        LEFT JOIN products p      ON p.id = oi.product_id
+        ORDER BY po.created_at DESC
+    `
+	rows, err := r.db.Query(ctx, query, limit, offset)
+	if err != nil {
+		return nil, 0, err
 	}
 	defer rows.Close()
 
-	// orderMap — ek order ke multiple items honge, group karo
 	orderMap := make(map[uuid.UUID]*Order)
-	var orderIDs []uuid.UUID // order preserve karne ke liye
+	var orderIDs []uuid.UUID
 
 	for rows.Next() {
 		var (
@@ -156,7 +167,7 @@ func (r *repository) GetAll(ctx context.Context) ([]*Order, error) {
 			&firstName, &lastName, &o.UserEmail,
 			&itemID, &productID, &quantity, &price, &productName,
 		); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		// order pehli baar aa raha hai
@@ -166,7 +177,7 @@ func (r *repository) GetAll(ctx context.Context) ([]*Order, error) {
 			orderIDs = append(orderIDs, o.ID)
 		}
 
-		// item attach karo — JS ka .populate("products.productId")
+		// item attach karo
 		if itemID != nil {
 			pName := ""
 			if productName != nil {
@@ -188,7 +199,7 @@ func (r *repository) GetAll(ctx context.Context) ([]*Order, error) {
 	for _, id := range orderIDs {
 		orders = append(orders, orderMap[id])
 	}
-	return orders, nil
+	return orders, total, nil
 }
 
 
